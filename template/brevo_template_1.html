@@ -1,0 +1,1027 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="x-apple-disable-message-reformatting" />
+<meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no" />
+<meta name="color-scheme" content="light only" />
+<meta name="supported-color-schemes" content="light only" />
+<title>{{ params.newsletter_title }} | Coin Edition</title>
+
+<!--
+=====================================================================
+ COIN EDITION - DAILY CRYPTO MARKET RECAP (HTML EMAIL TEMPLATE)
+=====================================================================
+ Built from : "CE Newsletter Template.pdf"
+ Target     : Brevo "custom HTML code" editor
+ Tech       : Tables + inline CSS only. No JS, no external CSS/fonts.
+ Layout     : UI redesign of 2026-10-13 - ONE outer container (a
+              single 1px border) holding every section, separated by
+              hairline dividers, on a white page: header (logo +
+              date as plain text), hero, intro, Market Snapshot, Top Stories (with
+              the partner banner), Trending, Radar, Explore, Stay
+              Ahead and the footer. Section headings sit on a very
+              light grey band with a dark-blue bar on the left.
+              Only the inner pieces are rounded: the data tables,
+              radar panels, Explore tiles, partner banner and the
+              small pills and badges.
+              Font: Arial, Helvetica, sans-serif. Bold is kept for
+              headings, story titles, radar labels, the number badges
+              and the market-cap total row; other emphasis is medium
+              (500). Font sizes, line heights, letter spacing, texts,
+              params, links and images are those of
+              template/brevo_template_1.html (the section-heading
+              emoji were removed on request).
+
+ =================================================================
+ DYNAMIC VALUES - Brevo params, filled in by the Python scripts
+ =================================================================
+ Every value comes from newsletter/newsletter_data.txt through
+ newsletter_params.py and is sent in each Brevo API call as
+ "params". In this HTML a value is written as params.NAME between
+ double braces - exact lower-case names (Brevo is case-sensitive).
+ The designer's temporary names are now:
+   DATE                     -> params.date
+   FIRST_NAME               -> params.first_name (recipient list)
+   BTC_PRICE / BTC_CHANGE   -> params.btc_price / params.btc_change
+                               (the same for ETH, BNB, XRP and SOL)
+   GLOBAL_MARKET_CAP        -> params.global_cap
+   GLOBAL_MARKET_CAP_CHANGE -> params.global_change
+   STORY_N_TITLE            -> params.story_N_title (a link to
+                               params.story_N_url)
+   STORY_N_DESCRIPTION      -> params.story_N_description
+   TRENDING_N_NAME / CHANGE -> params.trend_N_name / trend_N_change
+   RADAR_N_TITLE            -> params.radar_N_label
+   RADAR_N_DESCRIPTION      -> params.radar_N_text
+ Also filled in: params.intro_heading and params.intro_description
+ (the designer's wording unless changed in the data file),
+ params.*_color (the 24H Move colour, set from the
+ sign of the change) and the 8 Explore links (params.xrp_news_url..).
+ story_N_description and radar_N_text arrive as safe HTML built by
+ newsletter_params.py (all text escaped, only **bold** becomes a
+ strong tag, paragraphs joined by two line breaks) and are printed
+ with the |safe filter. Every other value is plain text that Brevo
+ HTML-escapes itself. Never put a double-brace tag inside an HTML
+ comment: Brevo fills tags in even inside comments.
+ params.newsletter_title only fills the document title in the head
+ (not shown in inboxes): the visible title was removed on request,
+ and the scripts still send the value.
+ Local master copy: template/brevo_template_1.html
+
+ The exact PDF value for every field is kept in a "PDF:"
+ comment directly above it, for reference only.
+
+ =================================================================
+ IMAGES (all hosted under coinedition.com/wp-content/uploads/)
+ =================================================================
+ LOGO     2022/07/CE-LOGO-WITH-TOG-02-min.png        2920 x 723
+          Header (240px) + sign-off (200px), both link to
+          https://coinedition.com/. Transparent PNG with navy
+          artwork - needs a white or very light background.
+ HERO     2026/10/coinedition-cover-reddit01.webp    1920 x 384
+          Full width under the header card, 640 x 128.
+ PARTNER  2026/10/unchained-summit-india02.webp      827 x 112
+          Full content width, 568 x 77, links to
+          https://unchainedsummit.com/india/
+
+ Optional slots still empty (no invented URLs - swap in your own):
+ STORY IMAGE 1 / STORY IMAGE 2
+
+ =================================================================
+ COLOURS (blue accents on white backgrounds)
+ =================================================================
+ Dark blue   #181C47 (text, heading bars, all numbers)
+ Light blue  #5AA9F0 (Explore list dots)
+ Heading band #F5F5F5
+ Light grey  #F2F2F2      Near-white  #FAFAFA
+ Hairline    #E5E5E5      Page bg     #FFFFFF (white; no blue
+                          backgrounds)
+ Body text   #3C4455      Muted text  #7A8396
+ No red anywhere: the 24H Move numbers are dark blue (the colour
+ values the scripts send are not shown). Trending pills: #0B7A44
+ text in a #E5E5E5 outline. Trending rows and radar panels have
+ borders only, no fills.
+=====================================================================
+-->
+
+<!--[if mso]>
+<xml>
+  <o:OfficeDocumentSettings>
+    <o:AllowPNG/>
+    <o:PixelsPerInch>96</o:PixelsPerInch>
+  </o:OfficeDocumentSettings>
+</xml>
+<![endif]-->
+
+<style type="text/css">
+  /* Client resets + responsive rules only. All visual styling is inline. */
+  body, table, td, a { -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }
+  table, td { mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  table { border-collapse:collapse; }
+  img { border:0; outline:none; text-decoration:none; -ms-interpolation-mode:bicubic; }
+  a { text-decoration:none; }
+  body { margin:0 !important; padding:0 !important; width:100% !important; }
+  .ExternalClass { width:100%; }
+  .ExternalClass, .ExternalClass p, .ExternalClass span,
+  .ExternalClass font, .ExternalClass td, .ExternalClass div { line-height:100%; }
+
+  @media only screen and (max-width:620px) {
+    .wrap      { width:100% !important; max-width:100% !important; }
+    .px        { padding-left:22px !important; padding-right:22px !important; }
+    .stack     { display:block !important; width:100% !important;
+                 padding-left:0 !important; padding-right:0 !important; }
+    .stack-gap { padding-bottom:26px !important; }
+    .hdr-date  { text-align:center !important; padding-top:14px !important; }
+    .m-hide    { display:none !important; }
+    .m-h-auto  { height:auto !important; }
+    .m-gap     { padding-bottom:22px !important; }
+    .h1        { font-size:23px !important; line-height:31px !important; }
+    .h2        { font-size:20px !important; line-height:27px !important; }
+    .h3        { font-size:17px !important; line-height:25px !important; }
+    .body-text { font-size:15px !important; line-height:25px !important; }
+    .cell-sm   { font-size:14px !important; padding-left:12px !important;
+                 padding-right:12px !important; }
+    .pill      { font-size:13px !important; }
+    .social    { font-size:14px !important; }
+  }
+</style>
+</head>
+
+<body style="margin:0; padding:0; background-color:#FFFFFF;">
+
+<!-- ================= PREHEADER (hidden inbox preview text) ================= -->
+<div style="display:none; font-size:1px; color:#FFFFFF; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; mso-hide:all;">
+  Here&rsquo;s what happened across the crypto market over the past 24 hours.
+  &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+</div>
+
+<!-- ================= PAGE BACKGROUND ================= -->
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#FFFFFF;">
+  <tr>
+    <td align="center" style="padding:24px 12px;">
+
+      <!--[if mso]>
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="640" align="center"><tr><td>
+      <![endif]-->
+
+      <!-- ================= EMAIL CONTAINER (640px): one bordered container for every section ================= -->
+      <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="640" class="wrap"
+             style="width:640px; max-width:640px; background-color:#FFFFFF; border:1px solid #E5E5E5;">
+
+        <!-- ===== HEADER CARD: LOGO (left) + ISSUE DATE (right) =====
+             On phones (.stack / .hdr-date) the two stack and centre. -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:#FFFFFF;">
+              <tr>
+                <td class="px" style="padding:20px 36px 20px 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td class="stack" width="240" valign="middle" style="width:240px;">
+
+                        <!-- ==================== COIN EDITION LOGO ====================
+                             Source is 2920 x 723 (~4.04 : 1), shown at 240 x 59.
+                             To resize, change the width/height attributes and the
+                             inline width together. The font styles only affect the
+                             alt text when images are blocked.
+                        ============================================================= -->
+                        <a href="https://coinedition.com/" target="_blank" style="text-decoration:none;">
+                          <img src="https://coinedition.com/wp-content/uploads/2022/07/CE-LOGO-WITH-TOG-02-min.png"
+                               width="240" height="59" alt="Coin Edition"
+                               style="display:block; border:0; width:240px; max-width:100%; height:auto; margin:0 auto; font-family:Arial,Helvetica,sans-serif; font-size:24px; line-height:30px; font-weight:bold; color:#181C47;" />
+                        </a>
+
+                      </td>
+                      <td class="stack hdr-date" align="right" valign="middle" style="padding-left:16px; font-family:Arial,Helvetica,sans-serif; font-size:11px; line-height:15px; font-weight:500; color:#181C47; letter-spacing:2.6px; text-transform:uppercase; mso-line-height-rule:exactly;">
+                        <!-- PDF: (issue date line - dynamic) -->
+                        {{ params.date }}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ===== HERO BANNER ===== -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; border-collapse:separate;">
+              <tr>
+                <td align="center" style="padding:0; background-color:#181C47;">
+
+                  <!-- ==================== HERO BANNER IMAGE ====================
+                       Full width of the column. Source is 1920 x 384 (5 : 1),
+                       shown at 640 x 128. If you swap the image, keep
+                       width/height in its ratio. The dark-blue cell only shows
+                       behind the white alt text when images are blocked.
+                  ============================================================= -->
+                  <img src="https://coinedition.com/wp-content/uploads/2026/10/coinedition-cover-reddit01.webp"
+                       width="640" height="128" alt="Coin Edition &ndash; Your Global News Destination"
+                       style="display:block; border:0; width:100%; height:auto; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:bold; color:#FFFFFF;" />
+
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ===== INTRO CARD: GREETING + 24-HOUR RECAP INTRO =====
+             The visible newsletter title was removed on request; the
+             title value now only fills the hidden document title in
+             the head. -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:#FFFFFF;">
+              <tr>
+                <td class="px" style="padding:30px 36px 30px 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td align="center" class="body-text" style="font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                        Hi {{ params.first_name }},
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" class="h2" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:24px; line-height:32px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
+                        {{ params.intro_heading }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" class="body-text" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; color:#3C4455; mso-line-height-rule:exactly;">
+                        {{ params.intro_description }}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ===== DIVIDER between sections ===== -->
+        <tr>
+          <td class="px" style="padding:0 36px; background-color:#FFFFFF;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr><td height="1" style="height:1px; line-height:1px; font-size:0; background-color:#EEEEEE;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- =====================================================
+             SECTION: MARKET SNAPSHOT
+        ====================================================== -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:#FFFFFF;">
+              <tr>
+                <td class="px" style="padding:30px 36px 0 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <!-- section heading: light-blue highlight bar on the left -->
+                      <td align="left" class="h2" style="padding:10px 14px; background-color:#F5F5F5; border-left:4px solid #181C47; font-family:Arial,Helvetica,sans-serif; font-size:22px; line-height:30px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                        Market Snapshot
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="px" style="padding:22px 36px 32px 36px;">
+
+            <!-- Market data table -->
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; border-collapse:separate; border:1px solid #E5E5E5; border-radius:10px;">
+
+              <!-- table head -->
+              <tr>
+                <td class="cell-sm" style="padding:12px 16px; border-bottom:2px solid #181C47; border-top-left-radius:9px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                  Asset
+                </td>
+                <td align="left" class="cell-sm" style="padding:12px 16px; border-bottom:2px solid #181C47; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                  Price / Status
+                </td>
+                <td align="right" class="cell-sm" style="padding:12px 16px; border-bottom:2px solid #181C47; border-top-right-radius:9px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                  24H Move
+                </td>
+              </tr>
+
+              <!-- Bitcoin -->
+              <tr>
+                <td class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  Bitcoin (BTC)
+                </td>
+                <td align="left" class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: $84,681.83 --> {{ params.btc_price }}
+                </td>
+                <!-- 24H Move: shown in dark blue, never red or green. The colour value the scripts send (params.*_color) is kept only in the invisible data-move-colour attribute, because the template checks require every sent value to be used. -->
+                <td align="right" class="cell-sm" data-move-colour="{{ params.btc_color }}" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: -0.6% --> {{ params.btc_change }}
+                </td>
+              </tr>
+
+              <!-- Ethereum -->
+              <tr>
+                <td class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  Ethereum (ETH)
+                </td>
+                <td align="left" class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: $2,681.55 --> {{ params.eth_price }}
+                </td>
+                <td align="right" class="cell-sm" data-move-colour="{{ params.eth_color }}" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: -1.4% --> {{ params.eth_change }}
+                </td>
+              </tr>
+
+              <!-- BNB -->
+              <tr>
+                <td class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  BNB
+                </td>
+                <td align="left" class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: $768.21 --> {{ params.bnb_price }}
+                </td>
+                <td align="right" class="cell-sm" data-move-colour="{{ params.bnb_color }}" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: -0.7% --> {{ params.bnb_change }}
+                </td>
+              </tr>
+
+              <!-- XRP -->
+              <tr>
+                <td class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  XRP
+                </td>
+                <td align="left" class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: $1.49 --> {{ params.xrp_price }}
+                </td>
+                <td align="right" class="cell-sm" data-move-colour="{{ params.xrp_color }}" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: -0.8% --> {{ params.xrp_change }}
+                </td>
+              </tr>
+
+              <!-- Solana -->
+              <tr>
+                <td class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  Solana (SOL)
+                </td>
+                <td align="left" class="cell-sm" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: $119.34 --> {{ params.sol_price }}
+                </td>
+                <td align="right" class="cell-sm" data-move-colour="{{ params.sol_color }}" style="padding:14px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: -0.6% --> {{ params.sol_change }}
+                </td>
+              </tr>
+
+              <!-- Global Crypto Market Cap (emphasised total row) -->
+              <tr>
+                <td class="cell-sm" style="padding:16px; border-top:2px solid #181C47; border-bottom-left-radius:9px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                  Global Crypto Market Cap
+                </td>
+                <td align="left" class="cell-sm" style="padding:16px; border-top:2px solid #181C47; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: $2.98T --> {{ params.global_cap }}
+                </td>
+                <td align="right" class="cell-sm" data-move-colour="{{ params.global_color }}" style="padding:16px; border-top:2px solid #181C47; border-bottom-right-radius:9px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                  <!-- PDF: -0.7% --> {{ params.global_change }}
+                </td>
+              </tr>
+
+            </table>
+
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ===== DIVIDER between sections ===== -->
+        <tr>
+          <td class="px" style="padding:0 36px; background-color:#FFFFFF;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr><td height="1" style="height:1px; line-height:1px; font-size:0; background-color:#EEEEEE;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- =====================================================
+             SECTION: TOP STORIES (with the partner banner between
+             stories 2 and 3)
+        ====================================================== -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:#FFFFFF;">
+              <tr>
+                <td class="px" style="padding:30px 36px 0 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td align="left" class="h2" style="padding:10px 14px; background-color:#F5F5F5; border-left:4px solid #181C47; font-family:Arial,Helvetica,sans-serif; font-size:22px; line-height:30px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                        Top Stories
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- ===== STORY 1 ===== -->
+              <tr>
+                <td class="px" style="padding:24px 36px 0 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <!-- number badge -->
+                      <td width="42" valign="top" style="width:42px; padding:0;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28" style="width:28px; border-collapse:separate;">
+                          <tr>
+                            <td align="center" height="28" style="width:28px; height:28px; background-color:#F2F2F2; border-radius:14px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:28px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                              1
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="top" style="padding:0;">
+
+                        <!-- ===== STORY IMAGE 1 (optional) =====
+                             <img src="YOUR_STORY_1_IMAGE_URL" width="526" alt=""
+                                  style="display:block; border:0; width:100%; max-width:526px; height:auto; margin-bottom:14px; border-radius:10px;" />
+                        ==================================== -->
+
+                        <!-- PDF: NEAR Intents Hacker Returns $3.8M -->
+                        <div class="h3" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
+                          <a href="{{ params.story_1_url }}" target="_blank" style="color:#181C47; text-decoration:none;">{{ params.story_1_title }}</a>
+                        </div>
+
+                        <!-- PDF: The attacker behind last week&rsquo;s NEAR Intents exploit has returned the full <strong>$3.8 million</strong> in stolen funds.<br /><br />The investigation has now been closed after the funds were sent back following a 48-hour deadline. -->
+                        <div class="body-text" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; color:#3C4455; mso-line-height-rule:exactly;">
+                          {{ params.story_1_description|safe }}
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- hairline between stories -->
+              <tr>
+                <td class="px" style="padding:24px 36px 0 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr><td height="1" style="height:1px; line-height:1px; font-size:0; background-color:#EEEEEE;">&nbsp;</td></tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- ===== STORY 2 ===== -->
+              <tr>
+                <td class="px" style="padding:24px 36px 0 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="42" valign="top" style="width:42px; padding:0;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28" style="width:28px; border-collapse:separate;">
+                          <tr>
+                            <td align="center" height="28" style="width:28px; height:28px; background-color:#F2F2F2; border-radius:14px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:28px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                              2
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="top" style="padding:0;">
+
+                        <!-- ===== STORY IMAGE 2 (optional) =====
+                             <img src="YOUR_STORY_2_IMAGE_URL" width="526" alt=""
+                                  style="display:block; border:0; width:100%; max-width:526px; height:auto; margin-bottom:14px; border-radius:10px;" />
+                        ==================================== -->
+
+                        <!-- PDF: SEC Approves 3x Leveraged Crypto ETPs -->
+                        <div class="h3" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
+                          <a href="{{ params.story_2_url }}" target="_blank" style="color:#181C47; text-decoration:none;">{{ params.story_2_title }}</a>
+                        </div>
+
+                        <!-- PDF: The SEC approved <strong>3x long exchange-traded products</strong> linked to:<br /><br /><strong>Bitcoin &bull; Ethereum &bull; Gold &bull; Silver &bull; Crude Oil &bull; Natural Gas</strong><br /><br />The development expands the range of leveraged market products available to investors. -->
+                        <div class="body-text" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; color:#3C4455; mso-line-height-rule:exactly;">
+                          {{ params.story_2_description|safe }}
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- =====================================================
+                   PARTNER SPOTLIGHT (rounded banner between stories 2 and 3)
+              ====================================================== -->
+              <tr>
+                <td class="px" style="padding:26px 36px 0 36px;">
+
+                  <!-- ============== PARTNER SPOTLIGHT BANNER ==============
+                       Source is 827 x 112 (~7.4 : 1), shown at 568 x 77 -
+                       the full content width. Links to the URL printed on
+                       the creative.
+                  ====================================================== -->
+                  <a href="https://unchainedsummit.com/india/" target="_blank" style="text-decoration:none;">
+                    <img src="https://coinedition.com/wp-content/uploads/2026/10/unchained-summit-india02.webp"
+                         width="568" height="77" alt="Unchained Summit India &middot; 05&ndash;06 Nov, 2026 &middot; Courtyard by Marriott, Mumbai"
+                         style="display:block; border:0; width:100%; height:auto; border-radius:10px; font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:19px; font-weight:bold; color:#181C47;" />
+                  </a>
+
+                </td>
+              </tr>
+
+              <!-- ===== STORY 3 ===== -->
+              <tr>
+                <td class="px" style="padding:26px 36px 32px 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="42" valign="top" style="width:42px; padding:0;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28" style="width:28px; border-collapse:separate;">
+                          <tr>
+                            <td align="center" height="28" style="width:28px; height:28px; background-color:#F2F2F2; border-radius:14px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:28px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                              3
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                      <td valign="top" style="padding:0;">
+                        <!-- PDF: Bitcoin Trades Near $84.6K -->
+                        <div class="h3" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
+                          <a href="{{ params.story_3_url }}" target="_blank" style="color:#181C47; text-decoration:none;">{{ params.story_3_title }}</a>
+                        </div>
+
+                        <!-- PDF: Bitcoin traded around <strong>$84,681</strong>, while the wider crypto market remained under pressure.<br /><br />Analysts are also watching the 88,350&ndash;<strong>89,200</strong> Bitcoin cost-basis cluster, while rising futures open interest could increase volatility around key price levels. -->
+                        <div class="body-text" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; color:#3C4455; mso-line-height-rule:exactly;">
+                          {{ params.story_3_description|safe }}
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ===== DIVIDER between sections ===== -->
+        <tr>
+          <td class="px" style="padding:0 36px; background-color:#FFFFFF;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr><td height="1" style="height:1px; line-height:1px; font-size:0; background-color:#EEEEEE;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- =====================================================
+             SECTION: TRENDING IN CRYPTO
+        ====================================================== -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:#FFFFFF;">
+              <tr>
+                <td class="px" style="padding:30px 36px 0 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td align="left" class="h2" style="padding:10px 14px; background-color:#F5F5F5; border-left:4px solid #181C47; font-family:Arial,Helvetica,sans-serif; font-size:22px; line-height:30px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                        Trending in Crypto
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="px" style="padding:22px 36px 32px 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; border-collapse:separate; border:1px solid #E5E5E5; border-radius:10px;">
+
+                    <!-- Trending 1 -->
+                    <tr>
+                      <td class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                        <!-- PDF: Dolphin --> {{ params.trend_1_name }}
+                      </td>
+                      <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
+                          <tr>
+                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#0B7A44; mso-line-height-rule:exactly;">
+                              <!-- PDF: +141.5% --> {{ params.trend_1_change }}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- Trending 2 -->
+                    <tr>
+                      <td class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                        <!-- PDF: GRX Chain --> {{ params.trend_2_name }}
+                      </td>
+                      <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
+                          <tr>
+                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#0B7A44; mso-line-height-rule:exactly;">
+                              <!-- PDF: +62.1% --> {{ params.trend_2_change }}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- Trending 3 -->
+                    <tr>
+                      <td class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                        <!-- PDF: Magma Finance --> {{ params.trend_3_name }}
+                      </td>
+                      <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
+                          <tr>
+                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#0B7A44; mso-line-height-rule:exactly;">
+                              <!-- PDF: +45.0% --> {{ params.trend_3_change }}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- Trending 4 -->
+                    <tr>
+                      <td class="cell-sm" style="padding:13px 16px; border-bottom-left-radius:9px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                        <!-- PDF: The Sandbox --> {{ params.trend_4_name }}
+                      </td>
+                      <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom-right-radius:9px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
+                          <tr>
+                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#0B7A44; mso-line-height-rule:exactly;">
+                              <!-- PDF: +77.5% --> {{ params.trend_4_change }}
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ===== DIVIDER between sections ===== -->
+        <tr>
+          <td class="px" style="padding:0 36px; background-color:#FFFFFF;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr><td height="1" style="height:1px; line-height:1px; font-size:0; background-color:#EEEEEE;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- =====================================================
+             SECTION: ALSO ON THE RADAR
+        ====================================================== -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:#FFFFFF;">
+              <tr>
+                <td class="px" style="padding:30px 36px 0 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td align="left" class="h2" style="padding:10px 14px; background-color:#F5F5F5; border-left:4px solid #181C47; font-family:Arial,Helvetica,sans-serif; font-size:22px; line-height:30px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                        Also on the Radar
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="px" style="padding:22px 36px 32px 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; border-collapse:separate;">
+
+                    <!-- Radar 1 -->
+                    <tr>
+                      <td style="padding:16px 18px; border:1px solid #E5E5E5; border-radius:10px;">
+                        <!-- PDF: BNY &times; Kraken -->
+                        <div style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                          {{ params.radar_1_label }}
+                        </div>
+                        <!-- PDF: BNY is reportedly in discussions with Kraken parent Payward over a potential digital-asset partnership covering custody, trading, payments and wealth management. -->
+                        <div class="body-text" style="padding-top:6px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:25px; color:#3C4455; mso-line-height-rule:exactly;">
+                          {{ params.radar_1_text|safe }}
+                        </div>
+                      </td>
+                    </tr>
+                    <tr><td height="12" style="height:12px; line-height:12px; font-size:0;">&nbsp;</td></tr>
+
+                    <!-- Radar 2 -->
+                    <tr>
+                      <td style="padding:16px 18px; border:1px solid #E5E5E5; border-radius:10px;">
+                        <!-- PDF: Crypto Banking -->
+                        <div style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                          {{ params.radar_2_label }}
+                        </div>
+                        <!-- PDF: U.S. community bankers are challenging national trust bank charters granted to crypto companies. -->
+                        <div class="body-text" style="padding-top:6px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:25px; color:#3C4455; mso-line-height-rule:exactly;">
+                          {{ params.radar_2_text|safe }}
+                        </div>
+                      </td>
+                    </tr>
+                    <tr><td height="12" style="height:12px; line-height:12px; font-size:0;">&nbsp;</td></tr>
+
+                    <!-- Radar 3 -->
+                    <tr>
+                      <td style="padding:16px 18px; border:1px solid #E5E5E5; border-radius:10px;">
+                        <!-- PDF: Illinois -->
+                        <div style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                          {{ params.radar_3_label }}
+                        </div>
+                        <!-- PDF: The state&rsquo;s proposed <strong>0.2% crypto transaction tax</strong> has been delayed by six months to <strong>July 1, 2027</strong>, pending court approval. -->
+                        <div class="body-text" style="padding-top:6px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:25px; color:#3C4455; mso-line-height-rule:exactly;">
+                          {{ params.radar_3_text|safe }}
+                        </div>
+                      </td>
+                    </tr>
+
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ===== DIVIDER between sections ===== -->
+        <tr>
+          <td class="px" style="padding:0 36px; background-color:#FFFFFF;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr><td height="1" style="height:1px; line-height:1px; font-size:0; background-color:#EEEEEE;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- =====================================================
+             SECTION: EXPLORE MORE ON COIN EDITION
+             4 fixed Coin Edition section pages + 8 tag pages from
+             newsletter_data.txt (XRP_NEWS_URL ... VITALIK_BUTERIN_URL).
+             Three plain lists of points (a small light-blue dot
+             before each link, no boxes or lines). Each heading cell
+             is at least 32px (two lines) so the lists start on the
+             same line. On phones the lists stack (.stack), the 20px
+             gutters disappear (.m-hide) and the headings take one
+             line (.m-h-auto).
+        ====================================================== -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:#FFFFFF;">
+              <tr>
+                <td class="px" style="padding:30px 36px 0 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td align="left" class="h2" style="padding:10px 14px; background-color:#F5F5F5; border-left:4px solid #181C47; font-family:Arial,Helvetica,sans-serif; font-size:21px; line-height:29px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
+                        Explore More on Coin Edition
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              <tr>
+                <td class="px" style="padding:22px 36px 32px 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+
+                      <!-- Column 1: Market & Trading -->
+                      <td width="176" valign="top" class="stack m-gap" style="width:176px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr>
+                            <td class="m-h-auto" height="32" valign="top" style="height:32px;">
+                              <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; line-height:16px; font-weight:500; color:#181C47; letter-spacing:1.6px; text-transform:uppercase; mso-line-height-rule:exactly;">
+                                Market &amp; Trading
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding-top:10px;">
+                              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="https://coinedition.com/market/price-prediction/" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Price Predictions</a></td>
+                                </tr>
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="https://coinedition.com/tag/bitcoin-btc-news/" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Bitcoin News</a></td>
+                                </tr>
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="https://coinedition.com/tag/ethereum-eth-news/" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Ethereum News</a></td>
+                                </tr>
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="{{ params.xrp_news_url }}" target="_blank" style="display:block; color:#181C47; text-decoration:none;">XRP News</a></td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+
+                      <!-- gutter -->
+                      <td class="m-hide" width="20" style="width:20px; font-size:0; line-height:0;">&nbsp;</td>
+
+                      <!-- Column 2: Markets & Regulation -->
+                      <td width="176" valign="top" class="stack m-gap" style="width:176px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr>
+                            <td class="m-h-auto" height="32" valign="top" style="height:32px;">
+                              <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; line-height:16px; font-weight:500; color:#181C47; letter-spacing:1.6px; text-transform:uppercase; mso-line-height-rule:exactly;">
+                                Markets &amp; Regulation
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding-top:10px;">
+                              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="{{ params.india_crypto_news_url }}" target="_blank" style="display:block; color:#181C47; text-decoration:none;">India Crypto News</a></td>
+                                </tr>
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="https://coinedition.com/news/crypto-regulation-news/" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Crypto Regulation</a></td>
+                                </tr>
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="{{ params.crypto_hacks_url }}" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Crypto Hacks</a></td>
+                                </tr>
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="{{ params.crypto_scams_url }}" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Crypto Scams</a></td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+
+                      <!-- gutter -->
+                      <td class="m-hide" width="20" style="width:20px; font-size:0; line-height:0;">&nbsp;</td>
+
+                      <!-- Column 3: Follow the People Moving Crypto -->
+                      <td width="176" valign="top" class="stack" style="width:176px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                          <tr>
+                            <td class="m-h-auto" height="32" valign="top" style="height:32px;">
+                              <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; line-height:16px; font-weight:500; color:#181C47; letter-spacing:1.6px; text-transform:uppercase; mso-line-height-rule:exactly;">
+                                Follow the People Moving Crypto
+                              </div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding-top:10px;">
+                              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="{{ params.michael_saylor_url }}" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Michael Saylor</a></td>
+                                </tr>
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="{{ params.donald_trump_url }}" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Donald Trump</a></td>
+                                </tr>
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="{{ params.changpeng_zhao_url }}" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Changpeng Zhao</a></td>
+                                </tr>
+                                <tr>
+                                  <td width="16" valign="middle" style="width:16px;"><table role="presentation" border="0" cellpadding="0" cellspacing="0" width="6" style="width:6px; border-collapse:separate;"><tr><td height="6" style="width:6px; height:6px; background-color:#5AA9F0; border-radius:3px; font-size:0; line-height:6px;">&nbsp;</td></tr></table></td>
+                                  <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:30px; color:#181C47; mso-line-height-rule:exactly;"><a href="{{ params.vitalik_buterin_url }}" target="_blank" style="display:block; color:#181C47; text-decoration:none;">Vitalik Buterin</a></td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ===== DIVIDER between sections ===== -->
+        <tr>
+          <td class="px" style="padding:0 36px; background-color:#FFFFFF;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr><td height="1" style="height:1px; line-height:1px; font-size:0; background-color:#EEEEEE;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- =====================================================
+             SECTION: STAY AHEAD OF THE MARKET
+        ====================================================== -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:#FFFFFF;">
+              <tr>
+                <td class="px" style="padding:34px 36px 36px 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td align="center" class="h2" style="font-family:Arial,Helvetica,sans-serif; font-size:23px; line-height:31px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
+                        Stay Ahead of the Market
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" class="body-text" style="padding-top:14px; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; color:#3C4455; mso-line-height-rule:exactly;">
+                        Follow <strong style="color:#181C47;">Coin Edition</strong> for breaking crypto news, market analysis,
+                        regulation, institutional developments and Web3 updates.
+                      </td>
+                    </tr>
+
+                    <!-- Social links: X | LinkedIn | Telegram | Instagram -->
+                    <tr>
+                      <td align="center" style="padding-top:22px;">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="center">
+                          <tr>
+                            <td class="social" style="padding:0 10px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; mso-line-height-rule:exactly;">
+                              <!-- X -->
+                              <a href="https://twitter.com/CoinEdition" target="_blank" style="color:#181C47; text-decoration:none;">X</a>
+                            </td>
+                            <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; color:#CCCCCC;">|</td>
+                            <td class="social" style="padding:0 10px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; mso-line-height-rule:exactly;">
+                              <!-- LinkedIn -->
+                              <a href="https://www.linkedin.com/company/coinedition/" target="_blank" style="color:#181C47; text-decoration:none;">LinkedIn</a>
+                            </td>
+                            <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; color:#CCCCCC;">|</td>
+                            <td class="social" style="padding:0 10px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; mso-line-height-rule:exactly;">
+                              <!-- Telegram -->
+                              <a href="https://t.me/coinedition" target="_blank" style="color:#181C47; text-decoration:none;">Telegram</a>
+                            </td>
+                            <td style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; color:#CCCCCC;">|</td>
+                            <td class="social" style="padding:0 10px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; mso-line-height-rule:exactly;">
+                              <!-- Instagram -->
+                              <a href="https://www.instagram.com/coinedition_official/" target="_blank" style="color:#181C47; text-decoration:none;">Instagram</a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- Sign-off logo, links to CoinEdition.com (200 x 50, same source as the masthead) -->
+                    <tr>
+                      <td align="center" style="padding-top:28px;">
+                        <a href="https://coinedition.com/" target="_blank" style="text-decoration:none;">
+                          <img src="https://coinedition.com/wp-content/uploads/2022/07/CE-LOGO-WITH-TOG-02-min.png"
+                               width="200" height="50" alt="CoinEdition.com"
+                               style="display:block; border:0; width:200px; max-width:100%; height:auto; margin:0 auto; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47;" />
+                        </a>
+                      </td>
+                    </tr>
+
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- =====================================================
+             FOOTER (dark-blue band at the bottom of the container, ends with
+             the no-reply note)
+        ====================================================== -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; border-collapse:separate; background-color:#181C47;">
+              <tr>
+                <td class="px" style="padding:26px 36px 28px 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td align="center" style="font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:21px; color:#AFC3E3; font-style:italic; mso-line-height-rule:exactly;">
+                        You are receiving this email from Coin Edition.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:21px; font-weight:500; color:#AFC3E3; mso-line-height-rule:exactly;">
+                        <!-- Brevo's own unsubscribe link (help.brevo.com article 209553645) -->
+                        <a href="{{ unsubscribe }}" target="_blank" style="color:#FFFFFF; text-decoration:underline;">Unsubscribe</a>
+                        <span style="color:#5D6FA3;">&nbsp;|&nbsp;</span>
+                        <a href="https://coinedition.com/privacy-policy/" target="_blank" style="color:#FFFFFF; text-decoration:underline;">Privacy Policy</a>
+                        <span style="color:#5D6FA3;">&nbsp;|&nbsp;</span>
+                        <a href="https://coinedition.com/" target="_blank" style="color:#FFFFFF; text-decoration:none;">&copy; 2026 Coin Edition</a>
+                      </td>
+                    </tr>
+                    <!-- no-reply note -->
+                    <tr>
+                      <td align="center" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:21px; color:#AFC3E3; font-style:italic; mso-line-height-rule:exactly;">
+                        This is a no-reply email. Please do not reply.
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+      <!-- ================= /EMAIL COLUMN ================= -->
+
+      <!--[if mso]>
+      </td></tr></table>
+      <![endif]-->
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

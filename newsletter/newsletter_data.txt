@@ -1,0 +1,268 @@
+# =====================================================================
+#  COIN EDITION DAILY NEWSLETTER - CONTENT FILE
+#  Fills Brevo template 1 ("Coin Edition Daily Recap")
+# =====================================================================
+#
+#  HOW TO USE
+#    1. Change the values below and save this file.
+#    2. Check everything (sends nothing):   python send_test.py --dry-run
+#    3. Send to the 4 test addresses:        python send_test.py
+#       Content not confirmed yet (values marked "(sample)", READY_TO_SEND_ON
+#       empty)? A TEST can still go out, labelled in every email as
+#       UNVERIFIED SAMPLE CONTENT:          python send_test.py --allow-sample-content
+#       (check first with: python send_test.py --dry-run --allow-sample-content)
+#    The same file is used later for the real send (send_emails.py).
+#    It is read fresh on every run, so an edit is used straight away.
+#
+#  RULES
+#    - One value per line:  KEY=value   (no spaces needed around the "=")
+#    - Everything after the first "=" is the value. Commas, apostrophes,
+#      quotes, &, $, %, # and = are all fine inside a value.
+#    - Keep each value on ONE line, even long paragraphs.
+#    - Plain text only: no HTML tags such as <b>, and no HTML codes such
+#      as &amp; or &rsquo; - type the character itself (& or ’).
+#    - Bold: in story paragraphs and radar texts ONLY, put **double
+#      asterisks** around the words, e.g. returned the full **$3.8 million**
+#    - Don't put quotes around values - they would appear in the email.
+#    - Web addresses must start with https://
+#    - Lines starting with # are notes and are ignored.
+#    - Don't rename the KEYS (left of the "=").
+#
+#  The logo, the banner under the title and the Partner Spotlight banner
+#  are fixed in the template, exactly as in the original design - they
+#  are not set here.
+#
+#  LABELS
+#    DAILY     update for every issue
+#    FIXED     normally stays the same - change only when needed
+#    REQUIRED  must be filled in - otherwise the scripts stop with an
+#              error and send nothing
+#    OPTIONAL  may be left empty - the note says what happens then
+#
+#  STATUS 2026-10-13 14:35 IST (09:05 UTC): the five coin prices/changes and
+#  the three story titles/texts were checked against their sources (see the
+#  notes in sections 2 and 3). The global market cap, the trending coins and
+#  the radar items are still SAMPLE content, marked "(sample)" - the checks
+#  block sending until they are replaced. Nothing can be sent until the
+#  day's real content is confirmed in READY_TO_SEND_ON.
+# =====================================================================
+
+
+# ---------------------------------------------------------------------
+# 0. YOUR CONFIRMATION  [REQUIRED, DAILY]
+# ---------------------------------------------------------------------
+
+# After you have entered the day's REAL prices, stories, trending coins
+# and radar items, write today's date here, e.g. READY_TO_SEND_ON=2026-10-14
+# Sending (test AND production) is blocked while it is empty or not
+# today's date - so sample values or yesterday's prices can't go out
+# by mistake. Only a TEST may go ahead anyway, with
+# python send_test.py --allow-sample-content - every test email is then
+# labelled as unverified. Production (send_emails.py) never can.
+READY_TO_SEND_ON=
+
+
+# ---------------------------------------------------------------------
+# 1. NEWSLETTER DETAILS  (top of the email)
+# ---------------------------------------------------------------------
+
+# Date shown above the title.  [OPTIONAL]
+# Leave empty to use the date of sending, e.g. Friday, October 9, 2026
+DATE=
+
+# Title under the logo.  [OPTIONAL, FIXED]
+# Leave empty to show the design's title: DAILY CRYPTO MARKET RECAP
+NEWSLETTER_TITLE=DAILY CRYPTO MARKET RECAP
+
+# Heading under the greeting ("Hi Name,").  [OPTIONAL, FIXED]
+# Leave empty to show the design's heading: 24-Hour Crypto Recap
+INTRO_HEADING=24-Hour Crypto Recap
+
+# Sentence under that heading.  [OPTIONAL, FIXED]
+# Leave empty to show the design's sentence (the one below).
+INTRO_DESCRIPTION=Here’s what happened across the crypto market over the past 24 hours.
+
+
+# ---------------------------------------------------------------------
+# 2. MARKET SNAPSHOT  [REQUIRED, DAILY]
+#    Typed in by hand - nothing is fetched automatically.
+#      *_PRICE   the price exactly as it should appear, e.g. $84,612.30
+#      *_CHANGE  the 24-hour change WITH its sign, e.g. +0.35% or -0.85%
+#                (only 0% / 0.00% may be written without a sign)
+#      *_COLOR   [OPTIONAL - leave empty] the colour follows the sign:
+#                + is green (#0B7A44), - is red (#C8102E), 0% is grey
+#                (#7A8396). If you write green, red or grey here it must
+#                agree with the sign, otherwise sending is blocked.
+# ---------------------------------------------------------------------
+
+# BTC to SOL below: CoinGecko (USD, 24h) at 2026-10-13 09:05 UTC (14:35 IST),
+# cross-checked on Binance (USDT pairs, 24h) - prices within 0.13% of each
+# other, every 24-hour change in the same direction. Prices move all the
+# time (between 08:46 and 09:05 UTC BTC went from +0.21% to -0.12%):
+# refresh them just before sending.
+
+# Bitcoin (BTC)
+BTC_PRICE=$83,378.69
+BTC_CHANGE=-0.12%
+BTC_COLOR=
+
+# Ethereum (ETH)
+ETH_PRICE=$2,510.69
+ETH_CHANGE=-1.60%
+ETH_COLOR=
+
+# BNB
+BNB_PRICE=$742.69
+BNB_CHANGE=-1.17%
+BNB_COLOR=
+
+# XRP
+XRP_PRICE=$1.37
+XRP_CHANGE=-2.76%
+XRP_COLOR=
+
+# Solana (SOL)
+SOL_PRICE=$107.38
+SOL_CHANGE=-3.90%
+SOL_COLOR=
+
+# Global crypto market cap (the bold last row of the table)
+# NOT VERIFIED - the sources disagree (2026-10-13 08:44 UTC): CoinGecko
+# $2.81T (-3.51%), CoinPaprika $2.95T (-0.48%), CoinLore $2.78T (-0.02%).
+# CoinGecko at 09:03 UTC: $2.80T (-3.52%) - a 24h drop that does not fit
+# BTC's -0.12%, so treat it with caution. Take BOTH values from one
+# reference you trust (e.g. CoinMarketCap), then delete
+# " (sample - not verified)".
+GLOBAL_CAP=$2.68T (sample - not verified)
+GLOBAL_CHANGE=-0.95%
+GLOBAL_COLOR=
+
+
+# ---------------------------------------------------------------------
+# 3. TOP STORIES  [DAILY]  - three stories, numbered 1 to 3 in the email
+#      STORY_N_TITLE  headline - it links to STORY_N_URL          [REQUIRED]
+#      STORY_N_P1     first paragraph (the excerpt)                [REQUIRED]
+#      STORY_N_P2     second paragraph                             [OPTIONAL]
+#      STORY_N_P3     third paragraph                              [OPTIONAL]
+#      STORY_N_URL    the full article address, starting https://  [REQUIRED]
+#    The paragraphs are shown one under the other (an empty one is left
+#    out). They may use **bold**, e.g.:
+#      STORY_2_P1=The SEC approved **3x long exchange-traded products** linked to:
+#      STORY_2_P2=**Bitcoin • Ethereum • Gold • Silver • Crude Oil • Natural Gas**
+# ---------------------------------------------------------------------
+
+# Titles and texts below were written on 2026-10-13 from the linked articles
+# themselves (re-read at 09:04 UTC). NOTE: all three articles are 10-18 days
+# old - not news from the past 24 hours. Replace them with current stories
+# before sending, or decide consciously to keep them. The old titles came
+# from Coin Edition's "24 Hour Crypto Recap" of 2026-10-03 04:37 UTC:
+# https://coinedition.com/24-hour-crypto-recap-heres-what-happened-in-the-market-67/
+
+# Story 1 - article published 2026-10-02 04:00 UTC, BEFORE the funds came back;
+# it only covers the exploit and the team's repayment pledge. The last
+# sentence of the text comes from the Coin Edition recap above ("NEAR Intents
+# General Manager Alex Shevchenko confirmed the roughly $3.8 million stolen ...
+# has been fully returned, closing the investigation"), also reported by
+# Cointelegraph on 2026-10-03. So the old title "NEAR Intents Hacker Returns
+# $3.8M" was true, but this link does not cover it - to use that title, link
+# the recap (or another article about the return) instead.
+STORY_1_TITLE=NEAR Intents Hit by $3.8M Exploit
+STORY_1_P1=NEAR Intents reported an exploit that drained **$3.8 million** in user funds through a bug in its Omni deposit and withdrawal system. The team said it had patched the main vulnerability, paused deposits and withdrawals and pledged to compensate affected users in full from its treasury. General manager Alex Shevchenko later confirmed the stolen funds had been **returned in full**, closing the investigation.
+STORY_1_P2=
+STORY_1_P3=
+STORY_1_URL=https://coinedition.com/near-intents-3-8-million-exploit-what-users-should-know-and-do/
+
+# Story 2 - article published 2026-10-03 06:53 UTC. Title = the article's own
+# headline (the old one suggested the funds may already trade; the article
+# says trading still waits for a registration statement to become effective).
+# A web search on 2026-10-13 found no report of a launch since then.
+STORY_2_TITLE=SEC Approves Listing Rule for 3x Bitcoin and Ether ETFs
+STORY_2_P1=On Oct. 2, the SEC approved a Cboe BZX rule change clearing the way to list the first U.S. exchange-traded products that target **three times the daily performance of Bitcoin and Ether**. The approval covers six futures-based Volatility Shares products (the two crypto funds plus funds tracking gold, silver, crude oil and natural gas), which can only start trading once a Form S-1 registration statement becomes effective; the approval set no timeline for that step.
+STORY_2_P2=
+STORY_2_P3=
+STORY_2_URL=https://coinedition.com/sec-approves-listing-rule-for-3x-bitcoin-and-ether-etfs/
+
+# Story 3 - article published 2026-09-25 08:05 UTC: a price analysis whose
+# levels describe 25 September, not today (BTC was about $83.4K on 13 Oct).
+# The old title's "$84.6K" is not in the article (it says about $84.3K).
+STORY_3_TITLE=Bitcoin Rejected at $87K, $79.5K Support in Focus
+STORY_3_P1=A Sept. 25 analysis found Bitcoin trading near **$84,300** after a retreat from $87,000, which the analyst's chart marked as the main resistance buyers needed to reclaim. If the pullback deepened, **$79,500** was the key support to defend, with $70,500, $67,200 and $63,000 marked as lower levels.
+STORY_3_P2=
+STORY_3_P3=
+STORY_3_URL=https://coinedition.com/bitcoin-price-live-87k-rejection-puts-79-5k-support-in-focus/
+
+
+# ---------------------------------------------------------------------
+# 4. TRENDING IN CRYPTO  [REQUIRED, DAILY]  - the 4 strongest movers
+#      TREND_N_NAME    coin name and ticker, e.g. Sui (SUI)
+#      TREND_N_CHANGE  its 24-hour change, e.g. +12.4%
+#    The design shows all four rows, with the changes in green, so all
+#    four are needed and only RISES (with a +) are accepted.
+# ---------------------------------------------------------------------
+
+# NOT VERIFIED - these are sample values and live data contradicts them:
+# CoinGecko at 2026-10-13 08:44 UTC showed SUI -4.86%, RENDER +2.61%,
+# INJ +0.43% and ONDO -6.82%. Choose today's movers from ONE source, then
+# delete the " (sample)" marks.
+TREND_1_NAME=Sui (SUI) (sample)
+TREND_1_CHANGE=+12.4%
+TREND_2_NAME=Render (RENDER) (sample)
+TREND_2_CHANGE=+9.8%
+TREND_3_NAME=Injective (INJ) (sample)
+TREND_3_CHANGE=+7.1%
+TREND_4_NAME=Ondo (ONDO) (sample)
+TREND_4_CHANGE=+5.6%
+
+
+# ---------------------------------------------------------------------
+# 5. ALSO ON THE RADAR  [REQUIRED, DAILY]  - 3 short items to watch
+#      RADAR_N_LABEL  bold heading, e.g. US Inflation Data
+#      RADAR_N_TEXT   one or two sentences under it (**bold** allowed)
+#    The design shows all three items, so all three are needed.
+# ---------------------------------------------------------------------
+
+# NOT VERIFIED - generic sample texts. Leads found on 2026-10-13, all from
+# SECONDARY sources - the primary sources could not be opened from this
+# computer (bls.gov: HTTP 403; Deribit's public API: HTTP 503 at 09:07 UTC):
+#  * September CPI: listed for Wed 14 Oct, 8:30 a.m. ET by secondary
+#    calendars - confirm on bls.gov/schedule/news_release/cpi.htm
+#  * Deribit: about 16,300 BTC (~$1.36bn) of Bitcoin options expire on
+#    Fri 16 Oct; the large monthly expiry is 30 Oct (~$11.95bn) - confirm
+#    on deribit.com before quoting any figure.
+#  * Token unlocks: no source was checked.
+# Rewrite each item from a source you trust, then delete the " (sample)" marks.
+RADAR_1_LABEL=US Inflation Data (sample)
+RADAR_1_TEXT=The next CPI report could set the tone for risk assets. A cooler reading would strengthen the case for further rate cuts.
+
+RADAR_2_LABEL=Token Unlocks (sample)
+RADAR_2_TEXT=Several mid-cap projects have large token unlocks scheduled this week. Unlocks can add selling pressure, so watch trading volumes.
+
+RADAR_3_LABEL=Options Expiry (sample)
+RADAR_3_TEXT=A large batch of Bitcoin options expires on Friday. Expect extra volatility as traders close or roll their positions.
+
+
+# ---------------------------------------------------------------------
+# 6. EXPLORE MORE ON COIN EDITION  [REQUIRED, FIXED]  - links near the bottom
+#    Coin Edition tag pages (all checked to open on 2026-10-13).
+#    Change one only if that page moves. The other four links in this box
+#    (Price Predictions, Bitcoin News, Ethereum News, Crypto Regulation),
+#    the social links (X, LinkedIn, Telegram, Instagram - as published on
+#    coinedition.com) and the Privacy Policy link are fixed in the template.
+# ---------------------------------------------------------------------
+
+# "XRP News" (Market & Trading column)
+XRP_NEWS_URL=https://coinedition.com/tag/xrp-news/
+# "India Crypto News" (Markets & Regulation column)
+INDIA_CRYPTO_NEWS_URL=https://coinedition.com/tag/india/
+# "Crypto Hacks" (Markets & Regulation column)
+CRYPTO_HACKS_URL=https://coinedition.com/tag/crypto-hacks/
+# "Crypto Scams" (Markets & Regulation column)
+CRYPTO_SCAMS_URL=https://coinedition.com/tag/crypto-scam/
+# "Michael Saylor" (Follow the People Moving Crypto column)
+MICHAEL_SAYLOR_URL=https://coinedition.com/tag/michael-saylor/
+# "Donald Trump" (Follow the People Moving Crypto column)
+DONALD_TRUMP_URL=https://coinedition.com/tag/donald-trump/
+# "Changpeng Zhao" (Follow the People Moving Crypto column)
+CHANGPENG_ZHAO_URL=https://coinedition.com/tag/changpeng-zhao/
+# "Vitalik Buterin" (Follow the People Moving Crypto column)
+VITALIK_BUTERIN_URL=https://coinedition.com/tag/vitalik-buterin/

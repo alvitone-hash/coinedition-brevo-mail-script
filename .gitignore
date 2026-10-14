@@ -1,0 +1,17 @@
+# Secrets - the Brevo API key lives here. Never commit it.
+.env
+
+# Python virtual environment and cache files
+venv/
+__pycache__/
+*.pyc
+
+# Send logs
+logs/
+
+# Subscriber personal data (emails and names) - never commit
+data/
+batches/
+
+# Backups (copies of the send log contain subscriber email addresses)
+backups/
