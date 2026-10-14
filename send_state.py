@@ -129,7 +129,9 @@ class SendLog:
                 os.fsync(f.fileno())
         except OSError as error:
             raise SendLogError(_explain(self.path, error)) from None
-        self.records.append({"time": when, "round": round_id, "batch": batch, "email": email,
+        # The file keeps the address exactly as it was sent; in memory it is matched like _load() does
+        # (ignoring capitals and spaces), so a reloaded log still recognises everyone who has had the email.
+        self.records.append({"time": when, "round": round_id, "batch": batch, "email": (email or "").strip().lower(),
                              "status": status, "detail": row[5]})
 
     # ---- rounds ---------------------------------------------------------------------------

@@ -14,6 +14,9 @@ This is the TEST script. It:
   6. only if every check passed: shows the 4 addresses and waits for you to type YES,
      then sends the template to each test address separately
 
+A test email is exactly what subscribers get: the same subject (the first Top Stories heading,
+STORY_1_TITLE), template and params as send_emails.py. Only --allow-sample-content labels it.
+
 Run it from the project folder, with the virtual environment active:
 
     python send_test.py --dry-run     do all the checks, send nothing
@@ -50,7 +53,8 @@ from pathlib import Path
 from brevo_api import BrevoClient, BrevoError, SettingsError, daily_credits_left, load_settings
 from newsletter_params import (
     ARTICLE_URL_PARAMS, DATA_FILE, URL_PARAMS,
-    build_params, check_newsletter_data, check_values, params_table, read_newsletter_data, readiness_problems,
+    build_params, check_newsletter_data, check_values, email_subject, params_table, read_newsletter_data,
+    readiness_problems,
 )
 from recipients import clean_email, find_column, is_valid_email, read_table
 from send_state import LockedError, SendLock, now
@@ -120,7 +124,9 @@ def ask(question):
 # =============================================================================
 
 def read_test_recipients():
-    """Read tests/test_recipients.csv. Stops unless it holds exactly 4 good, different addresses."""
+    """Read tests/test_recipients.csv. Stops unless it holds exactly 4 different addresses (none of them an
+    example address). Every address is sent to exactly as written - never tidied or fixed; one that looks
+    invalid is still tried, with a warning, and Brevo's answer is logged."""
     if not TEST_RECIPIENTS_FILE.exists():
         stop(f"Test recipients file not found: {TEST_RECIPIENTS_FILE}")
     headers, rows, _ = read_table(TEST_RECIPIENTS_FILE)
@@ -129,23 +135,27 @@ def read_test_recipients():
         stop(f"tests/test_recipients.csv needs an 'Email' column. Columns found: {headers}")
     name_column, surname_column = find_column(headers, "name"), find_column(headers, "surname")
 
-    recipients, problems, seen = [], [], set()
+    recipients, problems, warnings, seen = [], [], [], set()
     for line, row in enumerate(rows, start=2):
-        email = clean_email(row.get(email_column))
+        email = str(row.get(email_column) or "")  # sent exactly as written - never tidied or fixed
+        key = clean_email(email)                  # only for the checks below
         name = (row.get(name_column) or "").strip() if name_column else ""
         surname = (row.get(surname_column) or "").strip() if surname_column else ""
-        if not (email or name or surname):
+        if not (key or name or surname):
             continue  # skip empty lines
-        if not email:
+        if not key:
             problems.append(f"line {line}: the Email is empty")
-        elif not is_valid_email(email):
-            problems.append(f"line {line}: '{email}' is not a valid email address")
-        elif email in EXAMPLE_ADDRESSES:
+        elif key in EXAMPLE_ADDRESSES:
             problems.append(f"line {line}: '{email}' is an example address - replace it with your own test address")
-        elif email in seen:
+        elif key in seen:
             problems.append(f"line {line}: '{email}' is listed twice")
-        seen.add(email)
+        elif not is_valid_email(key):
+            warnings.append(f"line {line}: '{email}' does not look like a valid email address - it is still tried "
+                            "exactly as written, and Brevo's answer is logged")
+        seen.add(key)
         recipients.append({"email": email, "name": name, "surname": surname})
+    for warning in warnings:
+        print(f"  [WARN] {warning}")
 
     if len(recipients) != REQUIRED_RECIPIENTS:
         problems.append(f"the file has {len(recipients)} recipients - it must have exactly {REQUIRED_RECIPIENTS}")
@@ -179,7 +189,8 @@ def check_brevo(client, settings, params, local_template=False):
     template = client.template(settings["template_id"])
     live_html = template.get("htmlContent", "")
     print(f"  [OK]   Template {settings['template_id']} found: \"{template.get('name', '')}\"")
-    print(f"         Subject: {template.get('subject', '')}")
+    print(f"         Template subject: {template.get('subject', '')} (not used - every email's subject is "
+          "STORY_1_TITLE)")
     if template.get("isActive") is False:
         problems.append(f"Template {settings['template_id']} is INACTIVE in Brevo - switch it on in Brevo's template list")
 
@@ -233,22 +244,23 @@ def build_email(recipient, settings, data, today):
         "sender": {"name": settings["sender_name"], "email": settings["sender_email"]},
         "to": [to],  # one recipient per email, so nobody sees the other addresses
         "templateId": settings["template_id"],
+        "subject": email_subject(data),  # the production subject; Brevo uses it instead of the template's
         "params": build_params(data, first_name, today),  # built from newsletter_data.txt, same as production
         "tags": [BREVO_TAG],
     }
 
 
-def label_as_sample(payload, template_subject):
+def label_as_sample(payload, subject):
     """The same email, labelled as a TEST with UNVERIFIED content (--allow-sample-content only).
 
-    The subject is the template's own subject with SAMPLE_SUBJECT_PREFIX in front (Brevo uses a
-    subject sent with templateId instead of the template's), and the date line and the intro
-    sentence start with the labels. Every other param stays exactly as built from the data file.
+    The subject is the newsletter's subject (STORY_1_TITLE) with SAMPLE_SUBJECT_PREFIX in front, and
+    the date line and the intro sentence start with the labels. Every other param stays exactly as
+    built from the data file.
     """
     params = dict(payload["params"])
     params["date"] = f"{SAMPLE_DATE_LABEL} · {params['date']}"
     params["intro_description"] = f"{SAMPLE_INTRO_NOTE} {params['intro_description']}"
-    return dict(payload, params=params, subject=f"{SAMPLE_SUBJECT_PREFIX} {template_subject}".strip())
+    return dict(payload, params=params, subject=f"{SAMPLE_SUBJECT_PREFIX} {subject}".strip())
 
 
 def log_result(recipient, status, detail):
@@ -339,13 +351,14 @@ def main(argv=None):
     url_problems = check_url_params(shown_params)
     problems += url_problems
     urls = [param for param in URL_PARAMS if shown_params[param]]
-    print(f"  [INFO] {len(urls)} web addresses in the params, including {len(ARTICLE_URL_PARAMS)} article URLs")
+    articles = sum(1 for param in ARTICLE_URL_PARAMS if shown_params[param])
+    print(f"  [INFO] {len(urls)} web addresses in the params, including {articles} article URLs")
 
     print("\n4) Checking your Brevo account (read-only - nothing is sent)")
     client = BrevoClient(settings["api_key"])
     try:
-        html, brevo_problems, brevo_warnings, credits, subject = check_brevo(client, settings, shown_params,
-                                                                             local_template=args.local_template)
+        html, brevo_problems, brevo_warnings, credits, _ = check_brevo(client, settings, shown_params,
+                                                                       local_template=args.local_template)
     except BrevoError as error:
         stop(str(error))
     problems += brevo_problems
@@ -357,7 +370,7 @@ def main(argv=None):
     print("\n5) The exact email payloads and a local preview (nothing is sent)")
     payloads = [build_email(r, settings, data, today) for r in recipients]
     if sample_mode:
-        payloads = [label_as_sample(payload, subject) for payload in payloads]
+        payloads = [label_as_sample(payload, email_subject(data)) for payload in payloads]
     PAYLOAD_FILE.parent.mkdir(exist_ok=True)
     PAYLOAD_FILE.write_text(json.dumps({"endpoint": "POST https://api.brevo.com/v3/smtp/email (NOT called)",
                                         "payloads": payloads}, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -370,6 +383,7 @@ def main(argv=None):
     links, images = link_report(preview)
     print(f"  [OK]   {PAYLOAD_FILE.relative_to(PROJECT_DIR)}: {len(payloads)} payloads, "
           f"{len(payloads[0]['params'])} params each (no API key in it)")
+    print(f"  [INFO] Subject of every test email: {payloads[0]['subject']}")
     summary = "all https" if not render_problems else f"{len(render_problems)} problem(s) listed above"
     print(f"  [{'OK' if not render_problems else 'FAIL'}]   {PREVIEW_FILE.relative_to(PROJECT_DIR)}: "
           f"{len(links)} links and {len(images)} images, {summary} (open it in a browser to look at it)")
@@ -404,8 +418,8 @@ def main(argv=None):
 
     print(f"\n  Template : {settings['template_id']}")
     print(f"  From     : {settings['sender_name']} <{settings['sender_email']}>")
+    print(f"  Subject  : {payloads[0]['subject']}")
     if sample_mode:
-        print(f"  Subject  : {payloads[0]['subject']}")
         print(f"  Content  : NOT VERIFIED - {len(unverified)} [SAMPLE] item(s), labelled in every email")
     print(f"  To       : {len(recipients)} test addresses, one separate email each:")
     for recipient in recipients:

@@ -5,7 +5,9 @@ keeps its own record of every email it accepted - the ground truth for duplicate
 daily limit. Production sending is switched on ONLY inside these tests, in memory.
 """
 
+import csv
 import io
+import json
 import os
 import tempfile
 import unittest
@@ -435,6 +437,76 @@ class GateTests(ProductionTestCase):
         self.assertEqual((production["templateId"], production["sender"], production["to"]),
                          (test["templateId"], test["sender"], test["to"]))
         self.assertNotEqual(production["tags"], test["tags"])
+        self.assertEqual(production["subject"], data["STORY_1_TITLE"])                 # the first Top Stories heading
+        self.assertEqual(test["subject"], production["subject"])                         # the test is the real email
+
+    def test_every_production_email_has_the_first_story_heading_as_subject(self):
+        self.at(2026, 10, 14, 10, 0)
+        self.start_round()
+        self.assertEqual(self.send()[0], 0)
+        self.assertEqual({p["subject"] for p in self.brevo.payloads}, {"NEAR Intents Hacker Returns $3.8M"})
+
+
+class DryRunMaxAndExactAddressTests(ProductionTestCase):
+    def test_dry_run_is_read_only_and_works_while_sending_is_off(self):
+        self.at(2026, 10, 14, 10, 0)
+        with mock.patch.object(send_emails, "PRODUCTION_SENDING_ENABLED", False):
+            code, out = self.run_cmd("--send", "--dry-run", "--max", "280")
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.brevo.calls, 0)
+        self.assertFalse((self.dir / "logs" / "production_send_log.csv").exists())
+        self.assertIn("DRY RUN - nothing was sent and the send log was not changed.", out)
+        self.assertIn("700 people still to email; 280 in this run", out)
+        listed = list(csv.DictReader(io.StringIO(
+            (self.dir / "logs" / "production_dry_run_recipients.csv").read_text(encoding="utf-8-sig"))))
+        self.assertEqual([r["Email"] for r in listed], self.emails[:280])
+        first = json.loads((self.dir / "logs" / "production_dry_run_example.json").read_text(encoding="utf-8"))
+        self.assertEqual((first["first_email"]["to"], first["first_email"]["subject"]),
+                         ([{"email": self.emails[0], "name": "Tester"}], "NEAR Intents Hacker Returns $3.8M"))
+        self.assertIn("python send_emails.py --new-round  ->  python send_emails.py --send --max 280", out)
+
+    def test_dry_run_lists_every_problem_and_still_sends_nothing(self):
+        self.at(2026, 10, 14, 10, 0)
+        write_data_file(self.dir / "newsletter" / "newsletter_data.txt", sample_data(self.clock().date()))
+        code, out = self.run_cmd("--send", "--dry-run")
+        self.assertEqual((code, self.brevo.calls), (1, 0), out)
+        self.assertIn("[FAIL] READY_TO_SEND_ON is empty", out)
+        self.assertIn("NOT READY", out)
+
+    def test_max_limits_one_real_run(self):
+        self.at(2026, 10, 14, 10, 0)
+        self.start_round()
+        code, out = self.run_cmd("--send", "--max", "280")
+        self.assertEqual((code, len(self.brevo.accepted)), (0, 280), out)
+        self.assertIn("280 now, at most 280 by --max", out)
+        self.at(2026, 10, 15, 10, 1)
+        self.assertEqual((self.send()[0], len(self.brevo.accepted)), (0, 580))
+        self.assertEqual(self.brevo.emails(), self.emails[:580])
+        self.assert_no_duplicates_per_round()
+
+    def test_dry_run_and_max_only_work_with_send(self):
+        for args in (["--dry-run"], ["--max", "280"], ["--send", "--max", "0"]):
+            with self.subTest(args=args), self.assertRaises(SystemExit), redirect_stderr(io.StringIO()):
+                send_emails.main(args)
+
+    def test_addresses_are_tried_exactly_as_written_and_an_invalid_one_is_not_skipped(self):
+        written = ["Ana.Lima@Example-Subscriber.test", "bob.@example-subscriber.test"] + self.emails[:3]
+        write_batches(self.dir / "batches", written)
+        self.brevo.reject.add("bob.@example-subscriber.test")      # Brevo refuses it as invalid
+        self.at(2026, 10, 14, 10, 0)
+        self.start_round()
+        code, out = self.send()
+        self.assertEqual((code, self.brevo.calls), (0, 5), out)
+        self.assertEqual(self.brevo.emails(), ["Ana.Lima@Example-Subscriber.test"] + self.emails[:3])
+        logged = [r["email"] for r in csv.DictReader(io.StringIO(
+            (self.dir / "logs" / "production_send_log.csv").read_text(encoding="utf-8-sig")))]
+        self.assertLessEqual(set(written), set(logged))                    # the log keeps them exactly as written
+        self.assertEqual(self.log().states(self.log().current_round())["bob.@example-subscriber.test"]["state"],
+                         "rejected")
+        self.at(2026, 10, 15, 10, 1)                                       # the next run emails nobody twice
+        self.assertEqual(self.send()[0], 0)
+        self.assertEqual(self.brevo.calls, 5)
+        self.assert_no_duplicates_per_round()
 
 
 if __name__ == "__main__":

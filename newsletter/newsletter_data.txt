@@ -39,12 +39,14 @@
 #              error and send nothing
 #    OPTIONAL  may be left empty - the note says what happens then
 #
-#  STATUS 2026-10-13 14:35 IST (09:05 UTC): the five coin prices/changes and
-#  the three story titles/texts were checked against their sources (see the
-#  notes in sections 2 and 3). The global market cap, the trending coins and
-#  the radar items are still SAMPLE content, marked "(sample)" - the checks
-#  block sending until they are replaced. Nothing can be sent until the
-#  day's real content is confirmed in READY_TO_SEND_ON.
+#  STATUS 2026-10-14: the five coin prices/changes and the global market
+#  cap were entered from your screenshot - NOT independently verified.
+#  The three story titles/texts were entered from your screenshots on
+#  2026-10-14 - NOT independently verified; their old article links
+#  were removed on request (see section 3). The trending coins and the
+#  radar items were entered from your data on 2026-10-14 - NOT
+#  independently verified. Nothing can be sent until the day's real
+#  content is confirmed in READY_TO_SEND_ON.
 # =====================================================================
 
 
@@ -76,11 +78,11 @@ NEWSLETTER_TITLE=DAILY CRYPTO MARKET RECAP
 
 # Heading under the greeting ("Hi Name,").  [OPTIONAL, FIXED]
 # Leave empty to show the design's heading: 24-Hour Crypto Recap
-INTRO_HEADING=24-Hour Crypto Recap
+INTRO_HEADING=Your 24-Hour Crypto Market Brief
 
 # Sentence under that heading.  [OPTIONAL, FIXED]
 # Leave empty to show the design's sentence (the one below).
-INTRO_DESCRIPTION=Here’s what happened across the crypto market over the past 24 hours.
+INTRO_DESCRIPTION=Crypto markets rebounded over the past 24 hours as Bitcoin recovered from Tuesday’s selloff. Here are the prices, security developments and market stories worth following.
 
 
 # ---------------------------------------------------------------------
@@ -95,123 +97,102 @@ INTRO_DESCRIPTION=Here’s what happened across the crypto market over the past 
 #                agree with the sign, otherwise sending is blocked.
 # ---------------------------------------------------------------------
 
-# BTC to SOL below: CoinGecko (USD, 24h) at 2026-10-13 09:05 UTC (14:35 IST),
-# cross-checked on Binance (USDT pairs, 24h) - prices within 0.13% of each
-# other, every 24-hour change in the same direction. Prices move all the
-# time (between 08:46 and 09:05 UTC BTC went from +0.21% to -0.12%):
-# refresh them just before sending.
+# BTC to SOL below: entered on 2026-10-14 from your screenshot - NOT
+# independently verified. Prices move all the time: refresh them just
+# before sending.
 
 # Bitcoin (BTC)
-BTC_PRICE=$83,378.69
-BTC_CHANGE=-0.12%
+BTC_PRICE=$83,403.41
+BTC_CHANGE=-0.14%
 BTC_COLOR=
 
 # Ethereum (ETH)
-ETH_PRICE=$2,510.69
-ETH_CHANGE=-1.60%
+ETH_PRICE=$2,501.29
+ETH_CHANGE=-1.05%
 ETH_COLOR=
 
 # BNB
-BNB_PRICE=$742.69
-BNB_CHANGE=-1.17%
+BNB_PRICE=$742.42
+BNB_CHANGE=-0.31%
 BNB_COLOR=
 
 # XRP
-XRP_PRICE=$1.37
-XRP_CHANGE=-2.76%
+XRP_PRICE=$1.363
+XRP_CHANGE=-0.74%
 XRP_COLOR=
 
 # Solana (SOL)
-SOL_PRICE=$107.38
-SOL_CHANGE=-3.90%
+SOL_PRICE=$107.07
+SOL_CHANGE=-1.12%
 SOL_COLOR=
 
 # Global crypto market cap (the bold last row of the table)
-# NOT VERIFIED - the sources disagree (2026-10-13 08:44 UTC): CoinGecko
-# $2.81T (-3.51%), CoinPaprika $2.95T (-0.48%), CoinLore $2.78T (-0.02%).
-# CoinGecko at 09:03 UTC: $2.80T (-3.52%) - a 24h drop that does not fit
-# BTC's -0.12%, so treat it with caution. Take BOTH values from one
-# reference you trust (e.g. CoinMarketCap), then delete
-# " (sample - not verified)".
-GLOBAL_CAP=$2.68T (sample - not verified)
-GLOBAL_CHANGE=-0.95%
+# Both values entered on 2026-10-14 from your screenshot - NOT
+# independently verified.
+GLOBAL_CAP=$2.80T
+GLOBAL_CHANGE=-0.29%
 GLOBAL_COLOR=
 
 
 # ---------------------------------------------------------------------
 # 3. TOP STORIES  [DAILY]  - three stories, numbered 1 to 3 in the email
-#      STORY_N_TITLE  headline - it links to STORY_N_URL          [REQUIRED]
+#      STORY_N_TITLE  headline (shown as plain text, not a link)   [REQUIRED]
 #      STORY_N_P1     first paragraph (the excerpt)                [REQUIRED]
 #      STORY_N_P2     second paragraph                             [OPTIONAL]
 #      STORY_N_P3     third paragraph                              [OPTIONAL]
-#      STORY_N_URL    the full article address, starting https://  [REQUIRED]
+#      STORY_N_URL    leave empty - the story links were removed   [OPTIONAL]
+#                     from the email on 2026-10-14; a value here is
+#                     not shown (the template no longer links titles)
 #    The paragraphs are shown one under the other (an empty one is left
 #    out). They may use **bold**, e.g.:
 #      STORY_2_P1=The SEC approved **3x long exchange-traded products** linked to:
 #      STORY_2_P2=**Bitcoin • Ethereum • Gold • Silver • Crude Oil • Natural Gas**
 # ---------------------------------------------------------------------
 
-# Titles and texts below were written on 2026-10-13 from the linked articles
-# themselves (re-read at 09:04 UTC). NOTE: all three articles are 10-18 days
-# old - not news from the past 24 hours. Replace them with current stories
-# before sending, or decide consciously to keep them. The old titles came
-# from Coin Edition's "24 Hour Crypto Recap" of 2026-10-03 04:37 UTC:
-# https://coinedition.com/24-hour-crypto-recap-heres-what-happened-in-the-market-67/
+# Titles and texts below: entered on 2026-10-14 word for word from your
+# screenshots - NOT independently verified. The old 2026-10-13 article
+# links were removed on 2026-10-14 at your request (STORY_N_URL empty);
+# the disclaimer under "Explore More on Coin Edition" links the full recap.
 
-# Story 1 - article published 2026-10-02 04:00 UTC, BEFORE the funds came back;
-# it only covers the exploit and the team's repayment pledge. The last
-# sentence of the text comes from the Coin Edition recap above ("NEAR Intents
-# General Manager Alex Shevchenko confirmed the roughly $3.8 million stolen ...
-# has been fully returned, closing the investigation"), also reported by
-# Cointelegraph on 2026-10-03. So the old title "NEAR Intents Hacker Returns
-# $3.8M" was true, but this link does not cover it - to use that title, link
-# the recap (or another article about the return) instead.
-STORY_1_TITLE=NEAR Intents Hit by $3.8M Exploit
-STORY_1_P1=NEAR Intents reported an exploit that drained **$3.8 million** in user funds through a bug in its Omni deposit and withdrawal system. The team said it had patched the main vulnerability, paused deposits and withdrawals and pledged to compensate affected users in full from its treasury. General manager Alex Shevchenko later confirmed the stolen funds had been **returned in full**, closing the investigation.
-STORY_1_P2=
+# Story 1
+STORY_1_TITLE=Ledger Confirms Tampered Hardware Wallets
+STORY_1_P1=Ledger confirmed that wallets sold through Southeast Asian distributor CryptoBilis contained unauthorised hardware components capable of capturing recovery phrases and transmitting them via an embedded eSIM.
+STORY_1_P2=Ledger said confirmed losses were linked to devices sold by that distributor, with no evidence its own infrastructure was compromised.
 STORY_1_P3=
-STORY_1_URL=https://coinedition.com/near-intents-3-8-million-exploit-what-users-should-know-and-do/
+STORY_1_URL=
 
-# Story 2 - article published 2026-10-03 06:53 UTC. Title = the article's own
-# headline (the old one suggested the funds may already trade; the article
-# says trading still waits for a registration statement to become effective).
-# A web search on 2026-10-13 found no report of a launch since then.
-STORY_2_TITLE=SEC Approves Listing Rule for 3x Bitcoin and Ether ETFs
-STORY_2_P1=On Oct. 2, the SEC approved a Cboe BZX rule change clearing the way to list the first U.S. exchange-traded products that target **three times the daily performance of Bitcoin and Ether**. The approval covers six futures-based Volatility Shares products (the two crypto funds plus funds tracking gold, silver, crude oil and natural gas), which can only start trading once a Form S-1 registration statement becomes effective; the approval set no timeline for that step.
-STORY_2_P2=
+# Story 2
+STORY_2_TITLE=Bitcoin Rebounds as South Korean Markets Stabilise
+STORY_2_P1=Bitcoin recovered to $83,349.20 after briefly falling below $81,000 during Tuesday’s selloff. South Korean stocks also stabilised after a sharp decline.
+STORY_2_P2=Investors are monitoring inflation risks and Federal Reserve signals as broader market volatility continues.
 STORY_2_P3=
-STORY_2_URL=https://coinedition.com/sec-approves-listing-rule-for-3x-bitcoin-and-ether-etfs/
+STORY_2_URL=
 
-# Story 3 - article published 2026-09-25 08:05 UTC: a price analysis whose
-# levels describe 25 September, not today (BTC was about $83.4K on 13 Oct).
-# The old title's "$84.6K" is not in the article (it says about $84.3K).
-STORY_3_TITLE=Bitcoin Rejected at $87K, $79.5K Support in Focus
-STORY_3_P1=A Sept. 25 analysis found Bitcoin trading near **$84,300** after a retreat from $87,000, which the analyst's chart marked as the main resistance buyers needed to reclaim. If the pullback deepened, **$79,500** was the key support to defend, with $70,500, $67,200 and $63,000 marked as lower levels.
-STORY_3_P2=
+# Story 3
+STORY_3_TITLE=OpenAI Reports Office Security Incident
+STORY_3_P1=OpenAI said it discovered a concealed recording device at one of its offices. The company said the matter was referred to the FBI and an arrest followed.
+STORY_3_P2=OpenAI reported no indication that model weights, source code or customer data were accessed.
 STORY_3_P3=
-STORY_3_URL=https://coinedition.com/bitcoin-price-live-87k-rejection-puts-79-5k-support-in-focus/
+STORY_3_URL=
 
 
 # ---------------------------------------------------------------------
-# 4. TRENDING IN CRYPTO  [REQUIRED, DAILY]  - the 4 strongest movers
+# 4. TRENDING SEARCHES & GAINERS  [REQUIRED, DAILY]  - 4 coins
 #      TREND_N_NAME    coin name and ticker, e.g. Sui (SUI)
-#      TREND_N_CHANGE  its 24-hour change, e.g. +12.4%
-#    The design shows all four rows, with the changes in green, so all
-#    four are needed and only RISES (with a +) are accepted.
+#      TREND_N_CHANGE  its 24-hour change WITH its sign, e.g. +12.4% or -1.01%
+#    The design shows all four rows, with the changes in dark blue, so all
+#    four are needed; rises and falls are both accepted.
 # ---------------------------------------------------------------------
 
-# NOT VERIFIED - these are sample values and live data contradicts them:
-# CoinGecko at 2026-10-13 08:44 UTC showed SUI -4.86%, RENDER +2.61%,
-# INJ +0.43% and ONDO -6.82%. Choose today's movers from ONE source, then
-# delete the " (sample)" marks.
-TREND_1_NAME=Sui (SUI) (sample)
-TREND_1_CHANGE=+12.4%
-TREND_2_NAME=Render (RENDER) (sample)
-TREND_2_CHANGE=+9.8%
-TREND_3_NAME=Injective (INJ) (sample)
-TREND_3_CHANGE=+7.1%
-TREND_4_NAME=Ondo (ONDO) (sample)
-TREND_4_CHANGE=+5.6%
+# Entered on 2026-10-14 from your data - NOT independently verified.
+TREND_1_NAME=Bitway (BTW)
+TREND_1_CHANGE=+49.86%
+TREND_2_NAME=Optimism (OP)
+TREND_2_CHANGE=+11.3%
+TREND_3_NAME=Doppler Finance (XDP)
+TREND_3_CHANGE=-1.01%
+TREND_4_NAME=Paimon Polymarket SPV (PPOLY)
+TREND_4_CHANGE=-0.22%
 
 
 # ---------------------------------------------------------------------
@@ -221,24 +202,16 @@ TREND_4_CHANGE=+5.6%
 #    The design shows all three items, so all three are needed.
 # ---------------------------------------------------------------------
 
-# NOT VERIFIED - generic sample texts. Leads found on 2026-10-13, all from
-# SECONDARY sources - the primary sources could not be opened from this
-# computer (bls.gov: HTTP 403; Deribit's public API: HTTP 503 at 09:07 UTC):
-#  * September CPI: listed for Wed 14 Oct, 8:30 a.m. ET by secondary
-#    calendars - confirm on bls.gov/schedule/news_release/cpi.htm
-#  * Deribit: about 16,300 BTC (~$1.36bn) of Bitcoin options expire on
-#    Fri 16 Oct; the large monthly expiry is 30 Oct (~$11.95bn) - confirm
-#    on deribit.com before quoting any figure.
-#  * Token unlocks: no source was checked.
-# Rewrite each item from a source you trust, then delete the " (sample)" marks.
-RADAR_1_LABEL=US Inflation Data (sample)
-RADAR_1_TEXT=The next CPI report could set the tone for risk assets. A cooler reading would strengthen the case for further rate cuts.
+# Entered on 2026-10-14 word for word from your data - NOT independently
+# verified.
+RADAR_1_LABEL=Fed and Treasury Signals
+RADAR_1_TEXT=New York Fed President John Williams suggested another rate hike this year may be appropriate. CME FedWatch placed the probability of an October hold at 77.3%.
 
-RADAR_2_LABEL=Token Unlocks (sample)
-RADAR_2_TEXT=Several mid-cap projects have large token unlocks scheduled this week. Unlocks can add selling pressure, so watch trading volumes.
+RADAR_2_LABEL=Bitcoin-to-Ethereum Whale Rotation
+RADAR_2_TEXT=A large holder reportedly sold 1,074 BTC worth about $89.5 million over three days and purchased 36,159 ETH worth roughly $90.6 million.
 
-RADAR_3_LABEL=Options Expiry (sample)
-RADAR_3_TEXT=A large batch of Bitcoin options expires on Friday. Expect extra volatility as traders close or roll their positions.
+RADAR_3_LABEL=Institutional and Legal Watch
+RADAR_3_TEXT=Strive announced plans for a $500 million preferred-stock offering. Separately, a former investor sued BitMEX in the UK High Court for £20 million over alleged unauthorised derivatives.
 
 
 # ---------------------------------------------------------------------

@@ -52,9 +52,19 @@ Usage
     python send_emails.py               status report only - sends nothing, no internet needed
     python send_emails.py --new-round   start a new round (sends nothing)
     python send_emails.py --send        send today's portion (only if every safety lock passes)
+    python send_emails.py --send --max 280
+                                        the same, but at most 280 emails in this run
+    python send_emails.py --send --dry-run [--max 280]
+                                        everything --send checks, READ-ONLY: lists who would get the
+                                        email now and saves them in logs/. Sends nothing, writes nothing
+                                        to the send log, and works while sending is switched off.
+
+Email addresses are used exactly as written in the batch files - never tidied, fixed or skipped.
 """
 
 import argparse
+import csv
+import json
 import sys
 import time
 from collections import Counter
@@ -62,8 +72,8 @@ from datetime import timedelta
 from pathlib import Path
 
 from brevo_api import BrevoClient, BrevoError, SettingsError, daily_credits_left, load_settings
-from newsletter_params import build_params, check_newsletter_data, params_table, read_newsletter_data
-from recipients import clean_email, find_column, is_valid_email, read_table
+from newsletter_params import build_params, check_newsletter_data, email_subject, params_table, read_newsletter_data
+from recipients import find_column, read_table
 from send_state import (DONE, GIVE_UP_AFTER, LockedError, SendLock, SendLog, SendLogError, backup_log, now,
                         round_tag)
 from template_check import check_rendered, check_template, render
@@ -116,6 +126,9 @@ class Paths:
         self.send_log = project_dir / "logs" / "production_send_log.csv"
         self.lock = project_dir / "logs" / "send.lock"
         self.log_backups = project_dir / "backups" / "send_log"
+        self.dry_run_list = project_dir / "logs" / "production_dry_run_recipients.csv"
+        self.dry_run_example = project_dir / "logs" / "production_dry_run_example.json"
+        self.dry_run_preview = project_dir / "logs" / "production_dry_run_preview.html"
 
 
 class Stop(Exception):
@@ -127,7 +140,9 @@ class Stop(Exception):
 # =============================================================================
 
 def read_batches(batches_dir):
-    """[(batch name, [person, ...]), ...] in number order. Invalid addresses are skipped."""
+    """[(batch name, [person, ...]), ...] in number order. Every address is used exactly as written in the
+    batch file - never changed or skipped. One that Brevo refuses is logged as rejected, and the run
+    goes on with the others. Only rows with no address at all are left out."""
     numbered = []
     for path in Path(batches_dir).glob("batch_*.csv"):
         number = path.stem[len("batch_"):]
@@ -145,13 +160,19 @@ def read_batches(batches_dir):
         name_column, surname_column = find_column(headers, "name"), find_column(headers, "surname")
         people = []
         for row in rows:
-            email = clean_email(row.get(email_column))
-            if is_valid_email(email):
+            email = str(row.get(email_column) or "")  # exactly as written - never tidied, fixed or dropped
+            if email.strip():
                 people.append({"email": email,
                                "name": (row.get(name_column) or "").strip() if name_column else "",
                                "surname": (row.get(surname_column) or "").strip() if surname_column else ""})
         batches.append((path.stem, people))
     return batches
+
+
+def address_key(email):
+    """How the send log recognises an address: ignoring capitals and surrounding spaces. The address
+    itself is always sent and logged exactly as written."""
+    return email.strip().lower()
 
 
 def everyone(batches, states):
@@ -160,9 +181,10 @@ def everyone(batches, states):
     seen, result = set(), []
     for batch, people in batches:
         for person in people:
-            if person["email"] not in seen:
-                seen.add(person["email"])
-                result.append((batch, person, states.get(person["email"], {})))
+            key = address_key(person["email"])
+            if key not in seen:
+                seen.add(key)
+                result.append((batch, person, states.get(key, {})))
     return result
 
 
@@ -290,6 +312,7 @@ def build_email(person, settings, data, round_id, batch, today):
         "sender": {"name": settings["sender_name"], "email": settings["sender_email"]},
         "to": [to],  # one recipient per email, so nobody sees the other addresses
         "templateId": settings["template_id"],
+        "subject": email_subject(data),  # the first Top Stories heading, instead of the template's subject
         "params": build_params(data, first_name, today),  # same code as the test
         "tags": [PRODUCTION_TAG, round_tag(round_id), batch],
     }
@@ -421,7 +444,7 @@ def cmd_new_round(paths):
         return 0
 
 
-def cmd_send(paths):
+def cmd_send(paths, max_count=None):
     # ---- Safety lock 1: the switch at the top of this file -------------------
     if not PRODUCTION_SENDING_ENABLED:
         raise Stop("Production sending is switched OFF.\n"
@@ -487,14 +510,16 @@ def cmd_send(paths):
             print(f"\nEverybody in round {round_id} has had the email. Start the next issue with:"
                   "  python send_emails.py --new-round")
             return 0
-        queue = due[:allowance]
+        queue = due[:allowance if max_count is None else min(allowance, max_count)]
 
         shown_params = build_params(data, "(each subscriber's Name)", today)
         print("\nReady to send:")
-        print(f"  Round      : {round_id}  ({len(due)} people still to email; {len(queue)} now)")
+        print(f"  Round      : {round_id}  ({len(due)} people still to email; {len(queue)} now"
+              + (f", at most {max_count} by --max" if max_count is not None else "") + ")")
         print(f"  Batches    : {', '.join(sorted({b for b, _ in queue}))}")
         print(f"  Template   : {settings['template_id']}")
         print(f"  From       : {settings['sender_name']} <{settings['sender_email']}>")
+        print(f"  Subject    : {email_subject(data)}")
         print(f"  First few  : {', '.join(p['email'] for _, p in queue[:3])}")
         print("\n  Brevo params in every email (from newsletter/newsletter_data.txt):")
         for line in params_table(shown_params, data):
@@ -526,6 +551,105 @@ def cmd_send(paths):
         return 1 if stop_reason else 0
 
 
+def cmd_dry_run(paths, max_count=None):
+    """What --send would do right now, READ-ONLY: the same checks, then who would get the email, saved in
+    logs/ with one example email. It sends nothing, writes nothing to the send log and works while
+    PRODUCTION_SENDING_ENABLED is False. Every problem is listed, where a real --send stops at the first."""
+    problems = []
+    try:
+        log = SendLog(paths.send_log)
+    except SendLogError as error:
+        raise Stop(str(error)) from None
+    today = clock().date()
+    round_id = log.current_round()
+
+    print("\n1) Newsletter content from newsletter/newsletter_data.txt")
+    data, read_problems = read_newsletter_data(paths.data_file)
+    content_problems, content_warnings = check_newsletter_data(data, today)
+    problems += read_problems + content_problems
+    for problem in problems:
+        print(f"  [FAIL] {problem}")
+    if not problems:
+        print("  [OK]   every value present and checked; READY_TO_SEND_ON is today")
+
+    print("\n2) Checking Brevo (read-only)")
+    settings = get_settings(paths)
+    client = make_client(settings["api_key"])
+    credits = daily_credits_left(brevo(client.account))
+    for check in (lambda: verify_template(client, settings, data, paths), lambda: check_history(client, log, today)):
+        try:
+            check()
+        except Stop as error:
+            problems.append(str(error))
+            print(f"  [FAIL] {error}")
+    accepted = set()
+    if round_id:  # --send first adds these to the log; here they are only read
+        started = log.round_started(round_id).date()
+        accepted = set(brevo(client.accepted_emails, round_tag(round_id), started - timedelta(days=1), today))
+
+    used = sum(1 for t in log.possibly_accepted() if t >= clock() - timedelta(hours=24))
+    allowance = DAILY_LIMIT - used
+    explanation = f"{DAILY_LIMIT} in any 24 hours - {used} in the last 24 hours = {allowance}"
+    if credits is not None:
+        explanation += f"; Brevo credits left today: {credits}"
+        allowance = min(allowance, credits)
+    allowance = max(allowance, 0)
+    print(f"\n3) Today's allowance: {allowance}  ({explanation})")
+    if not allowance:
+        problems.append("no emails may be sent right now - the 24-hour limit or Brevo's credits for today are used up")
+
+    batches = read_batches(paths.batches) if paths.batches.exists() else []
+    if not batches:
+        raise Stop("No batch files in batches/. Run  python split_excel.py  first.")
+    states = log.states(round_id) if round_id else {}
+    due = [(batch, person) for batch, person, state in everyone(batches, states)
+           if state.get("state") not in DONE and address_key(person["email"]) not in accepted]
+    queue = due[:allowance if max_count is None else min(allowance, max_count)]
+    command = "python send_emails.py --send" + (f" --max {max_count}" if max_count is not None else "")
+    shown_round = round_id or log.new_round_id(today)
+
+    print(f"\n4) What  {command}  would do now")
+    if not round_id:
+        print(f"  [INFO] No round has been started yet - --new-round would start round {shown_round} first.")
+    print(f"  Round      : {shown_round}  ({len(due)} people still to email; {len(queue)} in this run)")
+    print(f"  Batches    : {', '.join(sorted({b for b, _ in queue})) or '-'}")
+    print(f"  Template   : {settings['template_id']}")
+    print(f"  From       : {settings['sender_name']} <{settings['sender_email']}>")
+    print(f"  Subject    : {email_subject(data)}")
+    if queue:
+        print(f"  First, last: {queue[0][1]['email']}  ...  {queue[-1][1]['email']}")
+    for warning in content_warnings:
+        print(f"  [WARN] {warning}")
+
+    paths.dry_run_list.parent.mkdir(exist_ok=True)
+    with open(paths.dry_run_list, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+        writer.writerow(["#", "Batch", "Email", "Name", "Surname"])
+        for number, (batch, person) in enumerate(queue, start=1):
+            writer.writerow([number, batch, person["email"], person["name"], person["surname"]])
+    print(f"  [OK]   logs/{paths.dry_run_list.name}: the {len(queue)} recipient(s) in sending order")
+    if queue:
+        batch, person = queue[0]
+        example = build_email(person, settings, data, shown_round, batch, today)
+        paths.dry_run_example.write_text(json.dumps({"endpoint": "POST https://api.brevo.com/v3/smtp/email (NOT called)",
+                                                     "first_email": example}, indent=2, ensure_ascii=False),
+                                         encoding="utf-8")
+        html = paths.master_template.read_text(encoding="utf-8") if paths.master_template.exists() else ""
+        paths.dry_run_preview.write_text(render(html, example["params"]), encoding="utf-8")
+        print(f"  [OK]   logs/{paths.dry_run_example.name} and logs/{paths.dry_run_preview.name}: the first email")
+
+    print("\n5) Result")
+    if problems:
+        print(f"  NOT READY - {len(problems)} problem(s) above must be fixed before --send can send.")
+    else:
+        print(f"  READY - --send would email these {len(queue)} subscriber(s) now.")
+    print("\nDRY RUN - nothing was sent and the send log was not changed.")
+    steps = [] if PRODUCTION_SENDING_ENABLED else ["switch sending on (PRODUCTION_SENDING_ENABLED = True)"]
+    steps += [] if round_id else ["python send_emails.py --new-round"]
+    print("To send for real:  " + "  ->  ".join(steps + [command]))
+    return 0 if not problems else 1
+
+
 # =============================================================================
 # MAIN
 # =============================================================================
@@ -539,17 +663,26 @@ def main(argv=None):
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--send", action="store_true", help="send today's portion (only if every safety lock passes)")
     group.add_argument("--new-round", action="store_true", help="start a new round (sends nothing)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="with --send: every check, then who would get the email - read-only, sends nothing")
+    parser.add_argument("--max", type=int, metavar="N", help="with --send: send at most N emails in this run")
     args = parser.parse_args(argv)
+    if (args.dry_run or args.max is not None) and not args.send:
+        parser.error("--dry-run and --max only work together with --send")
+    if args.max is not None and args.max < 1:
+        parser.error("--max must be 1 or more")
 
     print("=" * 66)
-    print(" Coin Edition newsletter - PRODUCTION")
+    print(" Coin Edition newsletter - PRODUCTION" + ("   (DRY RUN - read-only, nothing is sent)" if args.dry_run else ""))
     print(" Sending is " + ("ENABLED" if PRODUCTION_SENDING_ENABLED else "DISABLED (safety switch is off)"))
     print("=" * 66)
 
     paths = Paths(PROJECT_DIR)
     try:
+        if args.send and args.dry_run:
+            return cmd_dry_run(paths, args.max)
         if args.send:
-            return cmd_send(paths)
+            return cmd_send(paths, args.max)
         if args.new_round:
             return cmd_new_round(paths)
         return cmd_status(paths)

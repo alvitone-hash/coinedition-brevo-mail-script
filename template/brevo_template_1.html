@@ -84,7 +84,7 @@
           Full width under the header card, 640 x 286.
  PARTNER  2026/10/unchained-summit-india02.webp      827 x 112
           Full content width, 568 x 77, links to
-          https://unchainedsummit.com/india/
+          https://unchainedsummit.com/india/?utm_source=newsletter&utm_medium=banner&utm_campaign=coinedition
 
  Optional slots still empty (no invented URLs - swap in your own):
  STORY IMAGE 1 / STORY IMAGE 2
@@ -100,7 +100,7 @@
                           backgrounds)
  Body text   #3C4455      Muted text  #7A8396
  No red anywhere: the 24H Move numbers are dark blue (the colour
- values the scripts send are not shown). Trending pills: #0B7A44
+ values the scripts send are not shown). Trending pills: #181C47
  text in a #E5E5E5 outline. Trending rows and radar panels have
  borders only, no fills.
 =====================================================================
@@ -446,8 +446,9 @@
                         ==================================== -->
 
                         <!-- PDF: NEAR Intents Hacker Returns $3.8M -->
-                        <div class="h3" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
-                          <a href="{{ params.story_1_url }}" target="_blank" style="color:#181C47; text-decoration:none;">{{ params.story_1_title }}</a>
+                        <!-- Story title, not a link: the old article links were removed on request. params.story_1_url (left empty) is kept only in the invisible data-story-url attribute, because the template checks require every sent value to be used. -->
+                        <div class="h3" data-story-url="{{ params.story_1_url }}" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
+                          {{ params.story_1_title }}
                         </div>
 
                         <!-- PDF: The attacker behind last week&rsquo;s NEAR Intents exploit has returned the full <strong>$3.8 million</strong> in stolen funds.<br /><br />The investigation has now been closed after the funds were sent back following a 48-hour deadline. -->
@@ -491,8 +492,9 @@
                         ==================================== -->
 
                         <!-- PDF: SEC Approves 3x Leveraged Crypto ETPs -->
-                        <div class="h3" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
-                          <a href="{{ params.story_2_url }}" target="_blank" style="color:#181C47; text-decoration:none;">{{ params.story_2_title }}</a>
+                        <!-- Story title, not a link (see story 1). -->
+                        <div class="h3" data-story-url="{{ params.story_2_url }}" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
+                          {{ params.story_2_title }}
                         </div>
 
                         <!-- PDF: The SEC approved <strong>3x long exchange-traded products</strong> linked to:<br /><br /><strong>Bitcoin &bull; Ethereum &bull; Gold &bull; Silver &bull; Crude Oil &bull; Natural Gas</strong><br /><br />The development expands the range of leveraged market products available to investors. -->
@@ -516,7 +518,7 @@
                        the full content width. Links to the URL printed on
                        the creative.
                   ====================================================== -->
-                  <a href="https://unchainedsummit.com/india/" target="_blank" style="text-decoration:none;">
+                  <a href="https://unchainedsummit.com/india/?utm_source=newsletter&amp;utm_medium=banner&amp;utm_campaign=coinedition" target="_blank" style="text-decoration:none;">
                     <img src="https://coinedition.com/wp-content/uploads/2026/10/unchained-summit-india02.webp"
                          width="568" height="77" alt="Unchained Summit India &middot; 05&ndash;06 Nov, 2026 &middot; Courtyard by Marriott, Mumbai"
                          style="display:block; border:0; width:100%; height:auto; border-radius:10px; font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:19px; font-weight:bold; color:#181C47;" />
@@ -541,8 +543,9 @@
                       </td>
                       <td valign="top" style="padding:0;">
                         <!-- PDF: Bitcoin Trades Near $84.6K -->
-                        <div class="h3" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
-                          <a href="{{ params.story_3_url }}" target="_blank" style="color:#181C47; text-decoration:none;">{{ params.story_3_title }}</a>
+                        <!-- Story title, not a link (see story 1). -->
+                        <div class="h3" data-story-url="{{ params.story_3_url }}" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
+                          {{ params.story_3_title }}
                         </div>
 
                         <!-- PDF: Bitcoin traded around <strong>$84,681</strong>, while the wider crypto market remained under pressure.<br /><br />Analysts are also watching the 88,350&ndash;<strong>89,200</strong> Bitcoin cost-basis cluster, while rising futures open interest could increase volatility around key price levels. -->
@@ -578,7 +581,7 @@
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
                       <td align="left" class="h2" style="padding:10px 14px; background-color:#F5F5F5; border-left:4px solid #181C47; font-family:Arial,Helvetica,sans-serif; font-size:22px; line-height:30px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
-                        Trending in Crypto
+                        Trending Searches &amp; Gainers
                       </td>
                     </tr>
                   </table>
@@ -596,7 +599,7 @@
                       <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE;">
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
                           <tr>
-                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#0B7A44; mso-line-height-rule:exactly;">
+                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
                               <!-- PDF: +141.5% --> {{ params.trend_1_change }}
                             </td>
                           </tr>
@@ -612,7 +615,7 @@
                       <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE;">
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
                           <tr>
-                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#0B7A44; mso-line-height-rule:exactly;">
+                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
                               <!-- PDF: +62.1% --> {{ params.trend_2_change }}
                             </td>
                           </tr>
@@ -628,7 +631,7 @@
                       <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE;">
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
                           <tr>
-                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#0B7A44; mso-line-height-rule:exactly;">
+                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
                               <!-- PDF: +45.0% --> {{ params.trend_3_change }}
                             </td>
                           </tr>
@@ -644,7 +647,7 @@
                       <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom-right-radius:9px;">
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
                           <tr>
-                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#0B7A44; mso-line-height-rule:exactly;">
+                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
                               <!-- PDF: +77.5% --> {{ params.trend_4_change }}
                             </td>
                           </tr>
@@ -890,6 +893,39 @@
                         </table>
                       </td>
 
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- ===== DIVIDER between sections ===== -->
+        <tr>
+          <td class="px" style="padding:0 36px; background-color:#FFFFFF;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+              <tr><td height="1" style="height:1px; line-height:1px; font-size:0; background-color:#EEEEEE;">&nbsp;</td></tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- =====================================================
+             RECAP SOURCE + DISCLAIMER (below Explore More on Coin
+             Edition). Small muted text across the full column; on
+             phones the side padding shrinks with the other sections
+             (.px) and the text simply wraps.
+        ====================================================== -->
+        <tr>
+          <td style="padding:0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; background-color:#FFFFFF;">
+              <tr>
+                <td class="px" style="padding:24px 36px 24px 36px;">
+                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td align="left" style="font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:21px; color:#7A8396; mso-line-height-rule:exactly;">
+                        Market figures and developments reflect the October 14, 2026 Coin Edition recap. <a href="https://coinedition.com/24-hour-crypto-recap-heres-what-happened-in-the-market-74/" target="_blank" style="color:#181C47; text-decoration:underline;">Read the full report</a>. This newsletter is for information only, not financial advice. Crypto markets involve risk.
+                      </td>
                     </tr>
                   </table>
                 </td>

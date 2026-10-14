@@ -107,6 +107,13 @@ class SplitTests(unittest.TestCase):
         lines += [",NoEmail,1", ",NoEmail,2", ",NoEmail,3", ",NoEmail,4", ",,", ",,", ",,"]
         return "\n".join(lines) + "\n", set(good)
 
+    INVALID = ["not-an-email", "a@b.c", "two@@x.test", "spaces in@x.test", "trailing@x.test.", "x@-bad-.test",
+               "no-tld@localhost", "plainaddress"]
+
+    def batch_sizes(self, tmp):
+        return [len(list(csv.DictReader(io.StringIO(f.read_text(encoding="utf-8-sig")))))
+                for f in sorted((Path(tmp) / "batches").glob("batch_*.csv"))]
+
     def test_4335_row_csv_is_split_into_batches_of_300(self):
         text, good = self.subscriber_csv()
         with tempfile.TemporaryDirectory() as tmp:
@@ -121,13 +128,37 @@ class SplitTests(unittest.TestCase):
                 seen += [r["Email"] for r in rows]
             removed = list(csv.DictReader(io.StringIO(
                 (Path(tmp) / "logs" / "removed_subscribers.csv").read_text(encoding="utf-8-sig"))))
-        self.assertEqual(sizes, [300] * 14 + [100])
+            flagged = list(csv.DictReader(io.StringIO(
+                (Path(tmp) / "logs" / "invalid_addresses.csv").read_text(encoding="utf-8-sig"))))
+        self.assertEqual(sizes, [300] * 14 + [108])
         self.assertEqual(len(seen), len(set(seen)))
-        self.assertEqual(set(seen), good)
+        self.assertEqual(set(seen), good | set(self.INVALID))       # invalid ones KEPT, exactly as written
         reasons = sorted({r["Reason"].split(" (")[0] for r in removed})
-        self.assertEqual(reasons, ["blank email", "duplicate", "invalid email"])
-        self.assertEqual(len(removed), 20 + 8 + 4)
-        self.assertIn("4,300 subscribers in 15 batches", out)
+        self.assertEqual(reasons, ["blank email", "duplicate"])     # nobody is left out for looking invalid
+        self.assertEqual(len(removed), 20 + 4)
+        self.assertEqual([r["Email"] for r in flagged], self.INVALID)
+        self.assertIn("4,308 subscribers in 15 batches", out)
+
+    def test_first_batch_can_be_smaller(self):
+        text, _ = self.subscriber_csv()
+        with tempfile.TemporaryDirectory() as tmp:
+            write(Path(tmp) / "data" / "subscribers.csv", text)
+            code, out = self.run_split(tmp, "--first-batch-size", "280")
+            self.assertEqual(code, 0, out)
+            self.assertEqual(self.batch_sizes(tmp), [280] + [300] * 13 + [128])
+        with tempfile.TemporaryDirectory() as tmp:
+            write(Path(tmp) / "data" / "subscribers.csv", text)
+            self.assertEqual(self.run_split(tmp, "--first-batch-size", "301")[0], 1)
+
+    def test_addresses_go_into_the_batches_exactly_as_written(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            write(Path(tmp) / "data" / "subscribers.csv", "Email,Name\nAna.Lima@Example.COM,Ana\nbob.@gmail.com,Bob\n")
+            code, out = self.run_split(tmp)
+            self.assertEqual(code, 0, out)
+            rows = list(csv.DictReader(io.StringIO(
+                (Path(tmp) / "batches" / "batch_01.csv").read_text(encoding="utf-8-sig"))))
+        self.assertEqual([r["Email"] for r in rows], ["Ana.Lima@Example.COM", "bob.@gmail.com"])
+        self.assertIn("of which look invalid     : 1", out)
 
     def test_status_column_stops_unless_overridden(self):
         with tempfile.TemporaryDirectory() as tmp:

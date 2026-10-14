@@ -30,6 +30,10 @@ class MappingTests(unittest.TestCase):
         data = dict(good_data(TODAY), STORY_2_P1="A", STORY_2_P2="**B**", STORY_2_P3="")
         self.assertEqual(np.build_params(data, "x", TODAY)["story_2_description"], "A<br /><br /><strong>B</strong>")
 
+    def test_email_subject_is_the_first_story_heading_as_typed(self):
+        data = dict(good_data(TODAY), STORY_1_TITLE="Bitcoin Rebounds as South Korean Markets Stabilise – Tuesday’s Low")
+        self.assertEqual(np.email_subject(data), "Bitcoin Rebounds as South Korean Markets Stabilise – Tuesday’s Low")
+
     def test_title_and_intro_default_to_the_design_wording(self):
         params = np.build_params(dict(good_data(TODAY), NEWSLETTER_TITLE="", INTRO_HEADING="", INTRO_DESCRIPTION=""),
                                  "x", TODAY)
@@ -113,7 +117,9 @@ class ValidationTests(unittest.TestCase):
         del data["BTC_PRICE"]
         problems = np.check_newsletter_data(data, TODAY)[0]
         self.assertTrue(any("BTC_PRICE is required" in p for p in problems))
-        self.assertTrue(any("STORY_3_URL is required" in p for p in problems_for(STORY_3_URL="")))
+        self.assertTrue(any("STORY_3_TITLE is required" in p for p in problems_for(STORY_3_TITLE="")))
+        self.assertEqual([p for p in problems_for(STORY_1_URL="", STORY_2_URL="", STORY_3_URL="") if "URL" in p],
+                         [])   # the story titles are no longer links, so the article addresses may be empty
         self.assertTrue(any("no number" in p for p in problems_for(ETH_PRICE="soon")))
 
     def test_every_row_of_the_design_is_required(self):
@@ -145,8 +151,8 @@ class ColourTests(unittest.TestCase):
         self.assertTrue(any("needs a + or - sign" in p for p in problems_for(SOL_CHANGE="0.92%")))
         self.assertTrue(any("not a percentage" in p for p in problems_for(SOL_CHANGE="up a bit")))
 
-    def test_trending_changes_must_be_rises(self):
-        self.assertTrue(any("not a rise" in p for p in problems_for(TREND_2_CHANGE="-3.0%")))
+    def test_trending_changes_may_rise_or_fall_but_need_a_sign(self):
+        self.assertEqual([p for p in problems_for(TREND_2_CHANGE="-3.0%") if "TREND_2_CHANGE" in p], [])
         self.assertTrue(any("needs a + or - sign" in p for p in problems_for(TREND_2_CHANGE="3.0%")))
 
 

@@ -7,6 +7,7 @@ network access is switched off for the whole test run, so nothing can ever be se
 import csv
 import io
 import json
+import re
 import tempfile
 import unittest
 from contextlib import redirect_stdout
@@ -100,7 +101,7 @@ class NormalTestSendTests(TestSendCase):
         self.assertEqual([p["params"]["first_name"] for p in self.brevo.payloads], [n for _, n in RECIPIENTS])
         for payload in self.brevo.payloads:
             self.assertEqual((payload["templateId"], payload["tags"]), (1, [send_test.BREVO_TAG]))
-            self.assertNotIn("subject", payload)                        # Brevo uses the template's subject
+            self.assertEqual(payload["subject"], "NEAR Intents Hacker Returns $3.8M")   # STORY_1_TITLE, as production
             self.assertEqual(payload["params"]["date"], np.format_date(self.today))
         self.assertNotIn("UNVERIFIED", out)
 
@@ -120,6 +121,29 @@ class NormalTestSendTests(TestSendCase):
         self.assertEqual([p["params"]["btc_price"] for p in self.brevo.payloads],
                          ["$84,681.83"] * 4 + ["$90,000.00"] * 4)
 
+    def test_test_email_is_exactly_the_production_email(self):
+        write_data_file(self.data_file, dict(good_data(self.today), STORY_1_TITLE="Ledger Confirms Tampered Hardware Wallets"))
+        code, out = self.run_test_send()
+        self.assertEqual(code, 0, out)
+        self.assertEqual({p["subject"] for p in self.brevo.payloads}, {"Ledger Confirms Tampered Hardware Wallets"})
+        self.assertIn("Subject  : Ledger Confirms Tampered Hardware Wallets", out)
+        for payload in self.brevo.payloads:   # no test label anywhere in what Brevo shows the reader
+            shown = json.dumps({"subject": payload["subject"], "params": payload["params"]}, ensure_ascii=False)
+            self.assertIsNone(re.search(r"\btest\b", shown, re.IGNORECASE), shown)
+
+    def test_addresses_are_sent_exactly_as_written_and_an_invalid_one_is_still_tried(self):
+        with open(self.recipients_file, "w", newline="", encoding="utf-8") as f:
+            csv.writer(f).writerows([["Email", "Name", "Surname"], ["Ana.Lima@Example-Test.com", "Ana", ""],
+                                     ["ben@example-test.com", "Ben", ""], ["carla.@example-test.com", "Carla", ""],
+                                     ["dev@example-test.com", "Dev", ""]])
+        write_data_file(self.data_file, good_data(self.today))
+        code, out = self.run_test_send()
+        self.assertEqual(code, 0, out)
+        self.assertEqual([p["to"][0]["email"] for p in self.brevo.payloads],
+                         ["Ana.Lima@Example-Test.com", "ben@example-test.com", "carla.@example-test.com",
+                          "dev@example-test.com"])
+        self.assertIn("'carla.@example-test.com' does not look like a valid email address - it is still tried", out)
+
 
 class SampleContentOptionTests(TestSendCase):
     def test_labelled_test_emails_go_to_the_four_test_addresses_only(self):
@@ -131,7 +155,7 @@ class SampleContentOptionTests(TestSendCase):
             self.assertEqual(payload["to"], [{"email": email, "name": name}])
             self.assertEqual(params["first_name"], name)
             self.assertEqual((payload["templateId"], payload["tags"]), (1, [send_test.BREVO_TAG]))
-            self.assertEqual(payload["subject"], "[TEST – UNVERIFIED SAMPLE CONTENT] Daily Crypto Market Recap")
+            self.assertEqual(payload["subject"], "[TEST – UNVERIFIED SAMPLE CONTENT] NEAR Intents Hacker Returns $3.8M")
             self.assertEqual(params["date"], f"TEST EMAIL – UNVERIFIED SAMPLE CONTENT · {np.format_date(self.today)}")
             self.assertTrue(params["intro_description"].startswith("This is a TEST email and its content has NOT"))
             self.assertEqual(params["global_cap"], "$2.68T (sample - not verified)")   # shown as written
@@ -173,7 +197,7 @@ class SampleContentOptionTests(TestSendCase):
         code, out = self.run_test_send("--allow-sample-content")
         self.assertEqual(code, 0, out)
         for payload in self.brevo.payloads:
-            self.assertNotIn("subject", payload)
+            self.assertEqual(payload["subject"], "NEAR Intents Hacker Returns $3.8M")   # no label at all
             self.assertEqual(payload["params"]["date"], np.format_date(self.today))
         self.assertNotIn("[SAMPLE]", out)
 
@@ -184,7 +208,7 @@ class SampleContentOptionTests(TestSendCase):
                                 ({"STORY_1_P1": "<b>Big</b> news"}, "contains the HTML tag"),
                                 ({"RADAR_1_TEXT": "the **$3.8 million"}, "odd number of **"),
                                 ({"SOL_CHANGE": "0.92%"}, "needs a + or - sign"),
-                                ({"TREND_2_CHANGE": "-3.0%"}, "is not a rise"),
+                                ({"TREND_2_CHANGE": "3.0%"}, "TREND_2_CHANGE=3.0% needs a + or - sign"),
                                 ({"BNB_COLOR": "green"}, "disagrees with BNB_CHANGE")]:
             with self.subTest(change=change):
                 write_data_file(self.data_file, dict(sample_data(self.today), **change))

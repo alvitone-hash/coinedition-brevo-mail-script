@@ -13,9 +13,10 @@ production emails are built in exactly the same way:
             |                               with send_test.py --allow-sample-content)
             v
     build_params(data, first_name)          {"btc_price": ..., "story_1_url": ..., ...}
+    email_subject(data)                     the subject line = STORY_1_TITLE (first Top Stories heading)
             |
             v
-    Brevo REST API  POST /v3/smtp/email     {"templateId": 1, "params": {...}}
+    Brevo REST API  POST /v3/smtp/email     {"templateId": 1, "subject": ..., "params": {...}}
 
 Template 1 (template/brevo_template_1.html) is the designer's original HTML with every
 {{UPPERCASE}} placeholder written as {{ params.name }}. The images (logo, hero banner,
@@ -199,6 +200,9 @@ OPTIONAL_KEYS = {
     "DATE", "NEWSLETTER_TITLE", "INTRO_HEADING", "INTRO_DESCRIPTION",
     "BTC_COLOR", "ETH_COLOR", "BNB_COLOR", "XRP_COLOR", "SOL_COLOR", "GLOBAL_COLOR",
     "STORY_1_P2", "STORY_1_P3", "STORY_2_P2", "STORY_2_P3", "STORY_3_P2", "STORY_3_P3",
+    # The story titles are no longer links (removed from the template on 2026-10-14), so the
+    # article addresses may stay empty. One that is filled in is still checked (https, real page).
+    "STORY_1_URL", "STORY_2_URL", "STORY_3_URL",
 }
 
 # Values must be plain text: HTML tags and codes like &amp; are refused (use **bold** instead).
@@ -442,16 +446,15 @@ def check_values(data):
             problems.append(f"{color_key}={data[color_key]} disagrees with {change_key}={change} - leave "
                             f"{color_key} empty so the colour always matches the change")
 
+    # 'Trending Searches & Gainers' shows every change in dark blue, so rises and falls are both fine -
+    # but, like the market changes, each one needs its sign.
     for key in TREND_CHANGE_KEYS:
         change = data.get(key, "")
         if not change:
             continue
-        direction, reason = parse_change(change)
+        _, reason = parse_change(change)
         if reason:
             problems.append(f"{key}={change} {reason}")
-        elif direction != "up":
-            problems.append(f"{key}={change} is not a rise - 'Trending in Crypto' lists the strongest movers "
-                            "and shows every change in green, so only rises like +9.8% can be shown")
 
     for key, value in data.items():
         if len(value) > 1 and value[0] == value[-1] and value[0] in "\"'":
@@ -497,6 +500,13 @@ def build_params(data, first_name, today=None):
         params[param] = value
     params["first_name"] = first_name
     return params
+
+
+def email_subject(data):
+    """The subject line of every email: the first Top Stories heading (STORY_1_TITLE), exactly as typed.
+    It is sent together with the template id, so Brevo uses it instead of the template's own subject.
+    STORY_1_TITLE is required, so check_newsletter_data() already stops a send when it is empty."""
+    return data.get("STORY_1_TITLE", "")
 
 
 def param_source(param):

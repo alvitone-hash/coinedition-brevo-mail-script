@@ -6,13 +6,15 @@ Reads : the subscriber file in data/ - a .csv (UTF-8 or Excel's "CSV", separated
         Surname are optional (see recipients.COLUMN_NAMES for the header names accepted).
         If data/ holds more than one file, choose one with --input.
 Writes: batches/batch_01.csv, batch_02.csv, ...  (at most 300 subscribers each)
-        logs/removed_subscribers.csv             (every row that was removed, and why)
+        logs/removed_subscribers.csv             (every row that was left out, and why)
+        logs/invalid_addresses.csv               (invalid-looking addresses - KEPT, see below)
 
-Cleaning:
-  * spaces, hidden characters and "mailto:" are removed; emails are made lower-case
-  * rows with a blank email are removed
-  * rows with an invalid email address are removed
-  * duplicate emails are removed (the first one is kept)
+Email addresses are NEVER changed: each one goes into the batches exactly as written in the file.
+  * rows with a blank email are left out - there is no address to send to
+  * an address written twice is sent once: later copies are left out (compared ignoring capitals
+    and spaces, so nobody gets the email twice)
+  * invalid-looking addresses are KEPT exactly as written: send_emails.py tries them like any other
+    and logs Brevo's answer. They are listed in logs/invalid_addresses.csv.
 
 Safety: this script sends to EVERYONE in the file. If the file has a column that looks like a
 subscription status (Status, Subscribed, Opt-in, Unsubscribed, Bounced ...), it stops so that
@@ -25,6 +27,7 @@ Usage:
     python split_excel.py                                  create the batch files
     python split_excel.py --input "data/subscribers.csv"   use this file
     python split_excel.py --overwrite                      replace batch files that already exist
+    python split_excel.py --first-batch-size 280           batch_01 gets 280, every later batch 300
 """
 
 import argparse
@@ -87,43 +90,44 @@ def find_input_file(chosen):
 # =============================================================================
 
 def clean_subscribers(rows, columns):
-    """Go through every row and keep only valid, unique email addresses.
+    """Go through every row and keep every address exactly as written, each one once.
 
-    Returns (kept, removed, empty_rows):
-      kept       - list of {"Email", "Name", "Surname"} to put in the batches
-      removed    - list of removed rows, each with the reason
+    Returns (kept, removed, empty_rows, invalid):
+      kept       - list of {"Email", "Name", "Surname"} to put in the batches (Email unchanged)
+      removed    - rows left out (blank email, or an address already listed), each with the reason
       empty_rows - number of completely empty rows that were skipped
+      invalid    - rows whose address looks invalid: KEPT in the batches, listed here for the report
     """
-    kept, removed, empty_rows = [], [], 0
-    first_seen_on_row = {}  # email -> file row where it first appeared
+    kept, removed, empty_rows, invalid = [], [], 0, []
+    first_seen_on_row = {}  # tidied address -> file row where it first appeared
 
     for index, row in enumerate(rows):
         file_row = index + 2  # +2 because row 1 is the header
-        original_email = str(row.get(columns["email"]) or "").strip()
+        email = str(row.get(columns["email"]) or "")  # exactly as written - never changed
         name = str(row.get(columns["name"]) or "").strip() if columns["name"] else ""
         surname = str(row.get(columns["surname"]) or "").strip() if columns["surname"] else ""
-        email = clean_email(original_email)
+        key = clean_email(email)  # only to recognise the same address written twice
 
-        if not (email or name or surname):
+        if not (email.strip() or name or surname):
             empty_rows += 1
             continue
 
-        if not email:
+        if not email.strip():
             reason = "blank email"
-        elif not is_valid_email(email):
-            reason = "invalid email"
-        elif email in first_seen_on_row:
-            reason = f"duplicate (same as row {first_seen_on_row[email]})"
+        elif key in first_seen_on_row:
+            reason = f"duplicate (same as row {first_seen_on_row[key]})"
         else:
             reason = None
 
         if reason:
-            removed.append({"Row": file_row, "Email": original_email, "Name": name, "Surname": surname,
-                            "Reason": reason})
-        else:
-            first_seen_on_row[email] = file_row
-            kept.append({"Email": email, "Name": name, "Surname": surname})
-    return kept, removed, empty_rows
+            removed.append({"Row": file_row, "Email": email, "Name": name, "Surname": surname, "Reason": reason})
+            continue
+        first_seen_on_row[key] = file_row
+        kept.append({"Email": email, "Name": name, "Surname": surname})
+        if not is_valid_email(key):
+            invalid.append({"Row": file_row, "Email": email, "Name": name, "Surname": surname,
+                            "Reason": "looks invalid - kept exactly as written; Brevo's answer will be logged"})
+    return kept, removed, empty_rows, invalid
 
 
 def write_csv(path, rows, columns):
@@ -134,16 +138,19 @@ def write_csv(path, rows, columns):
         writer.writerows(rows)
 
 
-def write_batches(subscribers):
-    """Save the subscribers as batches/batch_01.csv, batch_02.csv, ... (BATCH_SIZE each)."""
+def write_batches(subscribers, first_size=BATCH_SIZE):
+    """Save the subscribers as batches/batch_01.csv, batch_02.csv, ... - first_size in the first
+    one, BATCH_SIZE in every later one."""
     BATCHES_DIR.mkdir(exist_ok=True)
-    written = []
-    for start in range(0, len(subscribers), BATCH_SIZE):
-        number = start // BATCH_SIZE + 1
+    written, start = [], 0
+    while start < len(subscribers):
+        number = len(written) + 1
+        size = first_size if number == 1 else BATCH_SIZE
         path = BATCHES_DIR / f"batch_{number:02d}.csv"
-        chunk = subscribers[start:start + BATCH_SIZE]
+        chunk = subscribers[start:start + size]
         write_csv(path, chunk, ["Email", "Name", "Surname"])
         written.append((path.name, len(chunk)))
+        start += size
     return written
 
 
@@ -174,7 +181,11 @@ def main():
     parser.add_argument("--overwrite", action="store_true", help="replace batch files that already exist")
     parser.add_argument("--ignore-status-column", action="store_true",
                         help="go ahead although the file has a Status/Subscribed/Opt-in... column")
+    parser.add_argument("--first-batch-size", type=int, default=BATCH_SIZE, metavar="N",
+                        help=f"put N subscribers in batch_01 (1-{BATCH_SIZE}); every later batch gets {BATCH_SIZE}")
     args = parser.parse_args()
+    if not 1 <= args.first_batch_size <= BATCH_SIZE:
+        stop(f"--first-batch-size must be between 1 and {BATCH_SIZE}.")
 
     print("=" * 66)
     print(" Coin Edition newsletter - split subscribers into batches")
@@ -220,27 +231,31 @@ def main():
             print("       email twice and the 300-a-day limit still holds - and new subscribers in the file")
             print("       will be included in this round.\n")
 
-    kept, removed, empty_rows = clean_subscribers(rows, columns)
+    kept, removed, empty_rows, invalid = clean_subscribers(rows, columns)
     if not kept:
-        stop("No valid email addresses were found, so no batch files were written.")
+        stop("No email addresses were found, so no batch files were written.")
 
     for old_file in old_batches:
         old_file.unlink()
-    batches = write_batches(kept)
+    batches = write_batches(kept, args.first_batch_size)
     REMOVED_REPORT.parent.mkdir(exist_ok=True)
     write_csv(REMOVED_REPORT, removed, ["Row", "Email", "Name", "Surname", "Reason"])
+    invalid_report = REMOVED_REPORT.parent / "invalid_addresses.csv"
+    write_csv(invalid_report, invalid, ["Row", "Email", "Name", "Surname", "Reason"])
 
     blank = sum(1 for row in removed if row["Reason"] == "blank email")
-    invalid = sum(1 for row in removed if row["Reason"] == "invalid email")
     duplicates = sum(1 for row in removed if row["Reason"].startswith("duplicate"))
 
     print(f"\nRows in the file            : {len(rows):,}")
     if empty_rows:
         print(f"  empty rows skipped        : {empty_rows:,}")
-    print(f"  blank emails removed      : {blank:,}")
-    print(f"  invalid emails removed    : {invalid:,}")
-    print(f"  duplicate emails removed  : {duplicates:,}")
-    print(f"Subscribers kept            : {len(kept):,}")
+    print(f"  blank emails left out     : {blank:,}")
+    print(f"  repeated emails left out  : {duplicates:,}")
+    print(f"Subscribers kept            : {len(kept):,}  (every address exactly as written in the file)")
+    if invalid:
+        print(f"  of which look invalid     : {len(invalid):,}  - KEPT and tried; Brevo's answer is logged")
+        for row in invalid:
+            print(f"      row {row['Row']}: {row['Email']}")
 
     print(f"\nBatches written to {BATCHES_DIR}:")
     for file_name, count in batches:
@@ -248,7 +263,9 @@ def main():
     print(f"  {'Total':<16} {len(kept):>4,} subscribers in {len(batches)} batches")
 
     if removed:
-        print(f"\nRemoved rows are listed in {REMOVED_REPORT}")
+        print(f"\nRows left out are listed in {REMOVED_REPORT}")
+    if invalid:
+        print(f"Invalid-looking addresses (kept) are listed in {invalid_report}")
     print("\nDone. No emails were sent.")
     return 0
 
