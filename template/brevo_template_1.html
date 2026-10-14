@@ -240,8 +240,9 @@
                 <td class="px" style="padding:30px 36px 30px 36px;">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                      <td align="center" class="body-text" style="font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
-                        Hi {{ params.first_name }},
+                      <!-- Greeting: every recipient sees "Hi Subscribers,". The name the scripts send (params.first_name) is kept only in the invisible data-first-name attribute, because the template checks require every sent value to be used. -->
+                      <td align="center" class="body-text" data-first-name="{{ params.first_name }}" style="font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
+                        Hi Subscribers,
                       </td>
                     </tr>
                     <tr>
