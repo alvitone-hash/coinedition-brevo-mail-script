@@ -6,8 +6,8 @@ template_sync.py and the tests, so the same rules apply everywhere.
 check_template(html, params) - rules for the template text:
   * every {{ params.x }} must be a value the scripts send, with the exact (case-sensitive) name
   * every value the scripts send must appear somewhere in the template
-  * |safe only on the values newsletter_params.py turns into safe HTML (RICH_TEXT_PARAMS),
-    and always on those
+  * |safe only on the values newsletter_params.py builds as safe HTML (SAFE_HTML_PARAMS: the rows
+    of Top Stories, Trending and Radar), and always on those
   * only {% if params.x %} / {% else %} / {% endif %}, properly closed
   * no tags in another format such as {{BTC_PRICE}} (Brevo would leave them blank)
   * no tags inside <!-- comments --> (Brevo fills them in even there)
@@ -30,7 +30,7 @@ import html as html_lib
 import re
 from html.parser import HTMLParser
 
-from newsletter_params import RICH_TEXT_PARAMS, URL_PARAMS
+from newsletter_params import SAFE_HTML_PARAMS, URL_PARAMS
 
 TAG = re.compile(r"\{\{(.*?)\}\}|\{%(.*?)%\}", re.S)
 VARIABLE = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\|\s*([A-Za-z_]+)\s*)?$")
@@ -101,10 +101,10 @@ def check_template(html, params):
                                 "(names are case-sensitive), so it would be blank")
             if filter_name not in (None, "safe"):
                 problems.append(f"line {line}: {tag} - the |{filter_name} filter is not used by this project")
-            elif filter_name == "safe" and param not in RICH_TEXT_PARAMS:
-                problems.append(f"line {line}: {tag} - |safe is only allowed on the story paragraphs and radar "
-                                "texts, which the script turns into safe HTML; this value must be escaped by Brevo")
-            elif filter_name is None and param in RICH_TEXT_PARAMS:
+            elif filter_name == "safe" and param not in SAFE_HTML_PARAMS:
+                problems.append(f"line {line}: {tag} - |safe is only allowed on the rows of Top Stories, Trending "
+                                "and Radar, which the script builds as safe HTML; this value must be escaped by Brevo")
+            elif filter_name is None and param in SAFE_HTML_PARAMS:
                 problems.append(f"line {line}: {tag} needs |safe - the script sends it as ready-made safe HTML "
                                 "(without |safe readers would see &lt;strong&gt; codes)")
         else:                                                            # {% ... %}
@@ -256,8 +256,8 @@ def main(argv=None):
     import sys
     from pathlib import Path
 
-    from newsletter_params import (OPTIONAL_KEYS, build_params, check_newsletter_data, param_source,
-                                   read_newsletter_data)
+    from newsletter_params import (build_params, check_newsletter_data, entries_report, optional_keys, param_source,
+                                   read_newsletter_data, section_summary)
 
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")
@@ -274,7 +274,7 @@ def main(argv=None):
     email = render(html, params)
     problems += [f"preview with today's values: {p}" for p in check_rendered(email)]
     # The same email when every OPTIONAL value is empty - nothing may break or show a broken image.
-    bare = dict(data, **{key: "" for key in OPTIONAL_KEYS})
+    bare = dict(data, **{key: "" for key in optional_keys(data)})
     problems += [f"preview with optional values empty: {p}"
                  for p in check_rendered(render(html, build_params(bare, "")))]
     preview = project / "logs" / "template_preview.html"
@@ -282,11 +282,16 @@ def main(argv=None):
     preview.write_text(email, encoding="utf-8")
 
     print(f"Template file: {path} ({len(html):,} characters)")
-    print(f"\n{'placeholder in the template':<38}{'filled from (newsletter_data.txt)':<44}value now")
+    print(f"\n{'placeholder in the template':<42}{'filled from (newsletter_data.txt)':<44}value now")
     for name in placeholders(html):
         value = str(params.get(name, ""))
-        tag = "{{ params." + name + ("|safe" if name in RICH_TEXT_PARAMS else "") + " }}"
-        print(f"{tag:<38}{param_source(name):<44}{(value[:45] + '...') if len(value) > 45 else value or '(empty)'}")
+        tag = "{{ params." + name + ("|safe" if name in SAFE_HTML_PARAMS else "") + " }}"
+        if name in SAFE_HTML_PARAMS:
+            value = section_summary(name, data)
+        print(f"{tag:<42}{param_source(name):<44}{(value[:45] + '...') if len(value) > 45 else value or '(empty)'}")
+    print("\nNumbered sections - the email shows exactly these entries, in this order:")
+    for line in entries_report(data):
+        print(f"  {line}")
     links, images = link_report(email)
     print(f"\nPreview: {len(links)} links, {len(images)} images -> {preview}")
     print(f"\nTEMPLATE CHECK: {len(problems)} problem(s), {len(warnings)} warning(s)")

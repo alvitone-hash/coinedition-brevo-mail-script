@@ -49,28 +49,35 @@
                                (the same for ETH, BNB, XRP and SOL)
    GLOBAL_MARKET_CAP        -> params.global_cap
    GLOBAL_MARKET_CAP_CHANGE -> params.global_change
-   STORY_N_TITLE            -> params.story_N_title (a link to
-                               params.story_N_url)
-   STORY_N_DESCRIPTION      -> params.story_N_description
-   TRENDING_N_NAME / CHANGE -> params.trend_N_name / trend_N_change
-   RADAR_N_TITLE            -> params.radar_N_label
-   RADAR_N_DESCRIPTION      -> params.radar_N_text
  Also filled in: params.intro_heading and params.intro_description
  (the designer's wording unless changed in the data file),
  params.*_color (the 24H Move colour, set from the
- sign of the change) and the 8 Explore links (params.xrp_news_url..).
- story_N_description and radar_N_text arrive as safe HTML built by
- newsletter_params.py (all text escaped, only **bold** becomes a
- strong tag, paragraphs joined by two line breaks) and are printed
- with the |safe filter. Every other value is plain text that Brevo
- HTML-escapes itself. Never put a double-brace tag inside an HTML
- comment: Brevo fills tags in even inside comments.
+ sign of the change), the 8 Explore links (params.xrp_news_url..)
+ and the recap line under Explore (params.recap_date and
+ params.recap_url: which day's Coin Edition recap, and its link).
+
+ SECTIONS WITH A CHANGING NUMBER OF ENTRIES: Top Stories, Trending
+ and Radar show exactly the entries in the data file, in number
+ order - STORY_1_..., STORY_2_..., TREND_1_..., RADAR_1_... - however
+ many there are that day. Their rows are built by
+ newsletter_params.py (SECTION MARKUP: the same markup and styles
+ these rows had in this file) and arrive as four params:
+   params.stories_before_partner  stories 1 and 2 (above the banner)
+   params.stories_after_partner   story 3 onwards (below the banner)
+   params.trending_rows           one row per trending coin, the
+                                  change coloured by its sign
+   params.radar_items             one panel per radar item
+ They are safe HTML (every value escaped there, only **bold**
+ becomes a strong tag, story paragraphs joined by two line breaks)
+ and are printed with the |safe filter. Every other value is plain
+ text that Brevo HTML-escapes itself. Never put a double-brace tag
+ inside an HTML comment: Brevo fills tags in even inside comments.
  params.newsletter_title only fills the document title in the head
  (not shown in inboxes): the visible title was removed on request,
  and the scripts still send the value.
  Local master copy: template/brevo_template_1.html
 
- The exact PDF value for every field is kept in a "PDF:"
+ The exact PDF value for every market field is kept in a "PDF:"
  comment directly above it, for reference only.
 
  =================================================================
@@ -86,9 +93,6 @@
           Full content width, 568 x 77, links to
           https://unchainedsummit.com/india/?utm_source=newsletter&utm_medium=banner&utm_campaign=coinedition
 
- Optional slots still empty (no invented URLs - swap in your own):
- STORY IMAGE 1 / STORY IMAGE 2
-
  =================================================================
  COLOURS (blue accents on white backgrounds)
  =================================================================
@@ -99,10 +103,11 @@
  Hairline    #E5E5E5      Page bg     #FFFFFF (white; no blue
                           backgrounds)
  Body text   #3C4455      Muted text  #7A8396
- No red anywhere: the 24H Move numbers are dark blue (the colour
- values the scripts send are not shown). Trending pills: #181C47
- text in a #E5E5E5 outline. Trending rows and radar panels have
- borders only, no fills.
+ The 24H Move numbers are dark blue (the colour values the scripts
+ send are not shown). Trending pills: text coloured by the sign of
+ the change (newsletter_params.py) - green #0B7A44 rise, red #C8102E
+ fall, grey #7A8396 for 0% - in a #E5E5E5 outline. Trending rows and
+ radar panels have borders only, no fills.
 =====================================================================
 -->
 
@@ -406,7 +411,9 @@
 
         <!-- =====================================================
              SECTION: TOP STORIES (with the partner banner between
-             stories 2 and 3)
+             stories 2 and 3) - as many stories as the data file
+             holds (STORY_1_..., STORY_2_..., ...), in that order;
+             with fewer than 3 the banner comes after the last one.
         ====================================================== -->
         <tr>
           <td style="padding:0;">
@@ -423,89 +430,12 @@
                 </td>
               </tr>
 
-              <!-- ===== STORY 1 ===== -->
-              <tr>
-                <td class="px" style="padding:24px 36px 0 36px;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tr>
-                      <!-- number badge -->
-                      <td width="42" valign="top" style="width:42px; padding:0;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28" style="width:28px; border-collapse:separate;">
-                          <tr>
-                            <td align="center" height="28" style="width:28px; height:28px; background-color:#F2F2F2; border-radius:14px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:28px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
-                              1
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="top" style="padding:0;">
-
-                        <!-- ===== STORY IMAGE 1 (optional) =====
-                             <img src="YOUR_STORY_1_IMAGE_URL" width="526" alt=""
-                                  style="display:block; border:0; width:100%; max-width:526px; height:auto; margin-bottom:14px; border-radius:10px;" />
-                        ==================================== -->
-
-                        <!-- PDF: NEAR Intents Hacker Returns $3.8M -->
-                        <!-- Story title, not a link: the old article links were removed on request. params.story_1_url (left empty) is kept only in the invisible data-story-url attribute, because the template checks require every sent value to be used. -->
-                        <div class="h3" data-story-url="{{ params.story_1_url }}" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
-                          {{ params.story_1_title }}
-                        </div>
-
-                        <!-- PDF: The attacker behind last week&rsquo;s NEAR Intents exploit has returned the full <strong>$3.8 million</strong> in stolen funds.<br /><br />The investigation has now been closed after the funds were sent back following a 48-hour deadline. -->
-                        <div class="body-text" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; color:#3C4455; mso-line-height-rule:exactly;">
-                          {{ params.story_1_description|safe }}
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-
-              <!-- hairline between stories -->
-              <tr>
-                <td class="px" style="padding:24px 36px 0 36px;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tr><td height="1" style="height:1px; line-height:1px; font-size:0; background-color:#EEEEEE;">&nbsp;</td></tr>
-                  </table>
-                </td>
-              </tr>
-
-              <!-- ===== STORY 2 ===== -->
-              <tr>
-                <td class="px" style="padding:24px 36px 0 36px;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tr>
-                      <td width="42" valign="top" style="width:42px; padding:0;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28" style="width:28px; border-collapse:separate;">
-                          <tr>
-                            <td align="center" height="28" style="width:28px; height:28px; background-color:#F2F2F2; border-radius:14px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:28px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
-                              2
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="top" style="padding:0;">
-
-                        <!-- ===== STORY IMAGE 2 (optional) =====
-                             <img src="YOUR_STORY_2_IMAGE_URL" width="526" alt=""
-                                  style="display:block; border:0; width:100%; max-width:526px; height:auto; margin-bottom:14px; border-radius:10px;" />
-                        ==================================== -->
-
-                        <!-- PDF: SEC Approves 3x Leveraged Crypto ETPs -->
-                        <!-- Story title, not a link (see story 1). -->
-                        <div class="h3" data-story-url="{{ params.story_2_url }}" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
-                          {{ params.story_2_title }}
-                        </div>
-
-                        <!-- PDF: The SEC approved <strong>3x long exchange-traded products</strong> linked to:<br /><br /><strong>Bitcoin &bull; Ethereum &bull; Gold &bull; Silver &bull; Crude Oil &bull; Natural Gas</strong><br /><br />The development expands the range of leveraged market products available to investors. -->
-                        <div class="body-text" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; color:#3C4455; mso-line-height-rule:exactly;">
-                          {{ params.story_2_description|safe }}
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
+              <!-- ===== STORIES 1 AND 2 (above the partner banner) =====
+                   One row per story - number badge, title, paragraphs - with a
+                   hairline between two stories. Built by newsletter_params.py
+                   (SECTION MARKUP: the same markup and styles these rows had
+                   here) from STORY_1_... and STORY_2_... in newsletter_data.txt. -->
+              {{ params.stories_before_partner|safe }}
 
               <!-- =====================================================
                    PARTNER SPOTLIGHT (rounded banner between stories 2 and 3)
@@ -527,36 +457,11 @@
                 </td>
               </tr>
 
-              <!-- ===== STORY 3 ===== -->
-              <tr>
-                <td class="px" style="padding:26px 36px 32px 36px;">
-                  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tr>
-                      <td width="42" valign="top" style="width:42px; padding:0;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="28" style="width:28px; border-collapse:separate;">
-                          <tr>
-                            <td align="center" height="28" style="width:28px; height:28px; background-color:#F2F2F2; border-radius:14px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:28px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
-                              3
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                      <td valign="top" style="padding:0;">
-                        <!-- PDF: Bitcoin Trades Near $84.6K -->
-                        <!-- Story title, not a link (see story 1). -->
-                        <div class="h3" data-story-url="{{ params.story_3_url }}" style="font-family:Arial,Helvetica,sans-serif; font-size:19px; line-height:27px; font-weight:bold; color:#181C47; letter-spacing:-0.2px; mso-line-height-rule:exactly;">
-                          {{ params.story_3_title }}
-                        </div>
-
-                        <!-- PDF: Bitcoin traded around <strong>$84,681</strong>, while the wider crypto market remained under pressure.<br /><br />Analysts are also watching the 88,350&ndash;<strong>89,200</strong> Bitcoin cost-basis cluster, while rising futures open interest could increase volatility around key price levels. -->
-                        <div class="body-text" style="padding-top:10px; font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:26px; color:#3C4455; mso-line-height-rule:exactly;">
-                          {{ params.story_3_description|safe }}
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
+              <!-- ===== STORY 3 ONWARDS (below the partner banner) =====
+                   The same rows for STORY_3_..., STORY_4_... - the last one
+                   closes the section with 32px. With fewer than 3 stories
+                   this is a 32px space under the banner instead. -->
+              {{ params.stories_after_partner|safe }}
             </table>
           </td>
         </tr>
@@ -591,70 +496,13 @@
                 <td class="px" style="padding:22px 36px 32px 36px;">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; border-collapse:separate; border:1px solid #E5E5E5; border-radius:10px;">
 
-                    <!-- Trending 1 -->
-                    <tr>
-                      <td class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
-                        <!-- PDF: Dolphin --> {{ params.trend_1_name }}
-                      </td>
-                      <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
-                          <tr>
-                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
-                              <!-- PDF: +141.5% --> {{ params.trend_1_change }}
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-
-                    <!-- Trending 2 -->
-                    <tr>
-                      <td class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
-                        <!-- PDF: GRX Chain --> {{ params.trend_2_name }}
-                      </td>
-                      <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
-                          <tr>
-                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
-                              <!-- PDF: +62.1% --> {{ params.trend_2_change }}
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-
-                    <!-- Trending 3 -->
-                    <tr>
-                      <td class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
-                        <!-- PDF: Magma Finance --> {{ params.trend_3_name }}
-                      </td>
-                      <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom:1px solid #EEEEEE;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
-                          <tr>
-                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
-                              <!-- PDF: +45.0% --> {{ params.trend_3_change }}
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-
-                    <!-- Trending 4 -->
-                    <tr>
-                      <td class="cell-sm" style="padding:13px 16px; border-bottom-left-radius:9px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
-                        <!-- PDF: The Sandbox --> {{ params.trend_4_name }}
-                      </td>
-                      <td align="right" class="cell-sm" style="padding:13px 16px; border-bottom-right-radius:9px;">
-                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" align="right" style="border-collapse:separate;">
-                          <tr>
-                            <td class="pill" style="padding:4px 12px; border:1px solid #E5E5E5; border-radius:13px; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:20px; font-weight:500; color:#181C47; mso-line-height-rule:exactly;">
-                              <!-- PDF: +77.5% --> {{ params.trend_4_change }}
-                            </td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-
+                    <!-- One row per trending coin (TREND_1_..., TREND_2_..., ...
+                         in newsletter_data.txt, in that order), built by
+                         newsletter_params.py (SECTION MARKUP): the name, and the
+                         24-hour change in a pill whose text colour follows its
+                         sign. A hairline under every row but the last, which has
+                         the rounded bottom corners. -->
+                    {{ params.trending_rows|safe }}
                   </table>
                 </td>
               </tr>
@@ -692,50 +540,10 @@
                 <td class="px" style="padding:22px 36px 32px 36px;">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width:100%; border-collapse:separate;">
 
-                    <!-- Radar 1 -->
-                    <tr>
-                      <td style="padding:16px 18px; border:1px solid #E5E5E5; border-radius:10px;">
-                        <!-- PDF: BNY &times; Kraken -->
-                        <div style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
-                          {{ params.radar_1_label }}
-                        </div>
-                        <!-- PDF: BNY is reportedly in discussions with Kraken parent Payward over a potential digital-asset partnership covering custody, trading, payments and wealth management. -->
-                        <div class="body-text" style="padding-top:6px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:25px; color:#3C4455; mso-line-height-rule:exactly;">
-                          {{ params.radar_1_text|safe }}
-                        </div>
-                      </td>
-                    </tr>
-                    <tr><td height="12" style="height:12px; line-height:12px; font-size:0;">&nbsp;</td></tr>
-
-                    <!-- Radar 2 -->
-                    <tr>
-                      <td style="padding:16px 18px; border:1px solid #E5E5E5; border-radius:10px;">
-                        <!-- PDF: Crypto Banking -->
-                        <div style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
-                          {{ params.radar_2_label }}
-                        </div>
-                        <!-- PDF: U.S. community bankers are challenging national trust bank charters granted to crypto companies. -->
-                        <div class="body-text" style="padding-top:6px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:25px; color:#3C4455; mso-line-height-rule:exactly;">
-                          {{ params.radar_2_text|safe }}
-                        </div>
-                      </td>
-                    </tr>
-                    <tr><td height="12" style="height:12px; line-height:12px; font-size:0;">&nbsp;</td></tr>
-
-                    <!-- Radar 3 -->
-                    <tr>
-                      <td style="padding:16px 18px; border:1px solid #E5E5E5; border-radius:10px;">
-                        <!-- PDF: Illinois -->
-                        <div style="font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:22px; font-weight:bold; color:#181C47; mso-line-height-rule:exactly;">
-                          {{ params.radar_3_label }}
-                        </div>
-                        <!-- PDF: The state&rsquo;s proposed <strong>0.2% crypto transaction tax</strong> has been delayed by six months to <strong>July 1, 2027</strong>, pending court approval. -->
-                        <div class="body-text" style="padding-top:6px; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:25px; color:#3C4455; mso-line-height-rule:exactly;">
-                          {{ params.radar_3_text|safe }}
-                        </div>
-                      </td>
-                    </tr>
-
+                    <!-- One bordered panel per radar item (RADAR_1_..., RADAR_2_...,
+                         ... in newsletter_data.txt, in that order), 12px apart,
+                         built by newsletter_params.py (SECTION MARKUP). -->
+                    {{ params.radar_items|safe }}
                   </table>
                 </td>
               </tr>
@@ -914,7 +722,8 @@
              RECAP SOURCE + DISCLAIMER (below Explore More on Coin
              Edition). Small muted text across the full column; on
              phones the side padding shrinks with the other sections
-             (.px) and the text simply wraps.
+             (.px) and the text simply wraps. The recap's date and
+             link come from RECAP_DATE and RECAP_URL in the data file.
         ====================================================== -->
         <tr>
           <td style="padding:0;">
@@ -924,7 +733,7 @@
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
                       <td align="left" style="font-family:Arial,Helvetica,sans-serif; font-size:13px; line-height:21px; color:#7A8396; mso-line-height-rule:exactly;">
-                        Market figures and developments reflect the October 14, 2026 Coin Edition recap. <a href="https://coinedition.com/24-hour-crypto-recap-heres-what-happened-in-the-market-74/" target="_blank" style="color:#181C47; text-decoration:underline;">Read the full report</a>. This newsletter is for information only, not financial advice. Crypto markets involve risk.
+                        Market figures and developments reflect the {{ params.recap_date }} Coin Edition recap. <a href="{{ params.recap_url }}" target="_blank" style="color:#181C47; text-decoration:underline;">Read the full report</a>. This newsletter is for information only, not financial advice. Crypto markets involve risk.
                       </td>
                     </tr>
                   </table>

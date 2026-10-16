@@ -1,5 +1,6 @@
 """Content file -> Brevo params: mapping, validation, colours, safe HTML, URLs."""
 
+import re
 import tempfile
 import unittest
 from datetime import date, timedelta
@@ -23,12 +24,13 @@ class MappingTests(unittest.TestCase):
     def test_every_param_has_its_own_data_key(self):
         self.assertEqual(len(np.DATA_KEYS), len(set(np.DATA_KEYS)))
         params = np.build_params(good_data(TODAY), "Alvitone", TODAY)
-        self.assertEqual(len(params), 54)
+        self.assertEqual(len(params), 37)      # 32 fixed values + the rows of the 3 numbered sections (4) + first_name
         self.assertEqual(params["first_name"], "Alvitone")
 
     def test_story_paragraphs_become_one_description(self):
         data = dict(good_data(TODAY), STORY_2_P1="A", STORY_2_P2="**B**", STORY_2_P3="")
-        self.assertEqual(np.build_params(data, "x", TODAY)["story_2_description"], "A<br /><br /><strong>B</strong>")
+        self.assertIn(">\n                          A<br /><br /><strong>B</strong>\n",
+                      np.build_params(data, "x", TODAY)["stories_before_partner"])
 
     def test_email_subject_is_the_first_story_heading_as_typed(self):
         data = dict(good_data(TODAY), STORY_1_TITLE="Bitcoin Rebounds as South Korean Markets Stabilise – Tuesday’s Low")
@@ -122,7 +124,7 @@ class ValidationTests(unittest.TestCase):
                          [])   # the story titles are no longer links, so the article addresses may be empty
         self.assertTrue(any("no number" in p for p in problems_for(ETH_PRICE="soon")))
 
-    def test_every_row_of_the_design_is_required(self):
+    def test_each_entry_in_the_file_needs_its_required_values(self):
         self.assertTrue(any("TREND_4_CHANGE is required" in p for p in problems_for(TREND_4_CHANGE="")))
         self.assertTrue(any("RADAR_3_TEXT is required" in p for p in problems_for(RADAR_3_TEXT="")))
         self.assertEqual(problems_for(STORY_1_P2="", STORY_1_P3="", DATE="", BTC_COLOR=""), [])
@@ -154,6 +156,19 @@ class ColourTests(unittest.TestCase):
     def test_trending_changes_may_rise_or_fall_but_need_a_sign(self):
         self.assertEqual([p for p in problems_for(TREND_2_CHANGE="-3.0%") if "TREND_2_CHANGE" in p], [])
         self.assertTrue(any("needs a + or - sign" in p for p in problems_for(TREND_2_CHANGE="3.0%")))
+        self.assertEqual(len([p for p in problems_for(TREND_2_CHANGE="3.0%") if "TREND_2_CHANGE" in p]), 1)
+
+    def test_trending_rows_coloured_by_their_sign(self):
+        data = dict(good_data(TODAY), TREND_1_CHANGE="+49.86%", TREND_3_CHANGE="-1.01%", TREND_4_CHANGE="0%",
+                    TREND_5_NAME="Gains Network (GNS)", TREND_5_CHANGE="+94.33%")
+        rows = np.build_params(data, "x", TODAY)["trending_rows"]
+        self.assertIn(">\n                        Gains Network (GNS)\n", rows)
+        self.assertEqual(re.findall(r'class="pill" style="[^"]*color:(#[0-9A-F]{6});[^"]*">\s*(\S+)\s*</td>', rows),
+                         [(np.RISE_COLOR, "+49.86%"), (np.RISE_COLOR, "+62.1%"), (np.FALL_COLOR, "-1.01%"),
+                          (np.FLAT_COLOR, "0%"), (np.RISE_COLOR, "+94.33%")])
+        self.assertTrue(any("TREND_5_NAME is required" in p for p in problems_for(TREND_5_NAME="")))
+        self.assertTrue(any("disagrees with TREND_3_CHANGE" in p
+                            for p in problems_for(TREND_3_CHANGE="-1.01%", TREND_3_COLOR="green")))
 
 
 class SafeHtmlTests(unittest.TestCase):
@@ -167,14 +182,17 @@ class SafeHtmlTests(unittest.TestCase):
     def test_rich_params_are_built_as_safe_html(self):
         params = np.build_params(good_data(TODAY), "x", TODAY)
         self.assertIn("<strong>$3.8 million</strong> in stolen funds.<br /><br />The investigation",
-                      params["story_1_description"])
-        self.assertIn("<strong>0.2% crypto transaction tax</strong>", params["radar_3_text"])
-        self.assertEqual(set(np.RICH_TEXT_PARAMS) & {"story_1_title", "first_name", "radar_1_label"}, set())
+                      params["stories_before_partner"])
+        self.assertIn("<strong>0.2% crypto transaction tax</strong>", params["radar_items"])
+        self.assertEqual(np.SAFE_HTML_PARAMS,
+                         ["stories_before_partner", "stories_after_partner", "trending_rows", "radar_items"])
 
     def test_plain_text_values_are_sent_unescaped_for_brevo_to_escape(self):
-        params = np.build_params(dict(good_data(TODAY), STORY_1_TITLE="Fees & Taxes"), "O'Brien", TODAY)
-        self.assertEqual(params["story_1_title"], "Fees & Taxes")
-        self.assertEqual(params["first_name"], "O'Brien")
+        params = np.build_params(dict(good_data(TODAY), INTRO_HEADING="Fees & Taxes", STORY_1_TITLE="Fees & Taxes"),
+                                 "O'Brien", TODAY)
+        self.assertEqual((params["intro_heading"], params["first_name"]), ("Fees & Taxes", "O'Brien"))
+        # inside the ready-made story rows, which Brevo prints as they are (|safe), the title is escaped here
+        self.assertIn(">\n                          Fees &amp; Taxes\n", params["stories_before_partner"])
 
     def test_broken_bold_markup_is_refused(self):
         self.assertTrue(any("odd number of **" in p for p in problems_for(STORY_1_P1="the **$3.8 million")))
@@ -190,7 +208,7 @@ class UrlTests(unittest.TestCase):
 
     def test_spaces_are_encoded(self):
         params = np.build_params(dict(good_data(TODAY), STORY_1_URL="https://coinedition.com/a b/"), "x", TODAY)
-        self.assertEqual(params["story_1_url"], "https://coinedition.com/a%20b/")
+        self.assertIn('data-story-url="https://coinedition.com/a%20b/"', params["stories_before_partner"])
 
 
 if __name__ == "__main__":

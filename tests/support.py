@@ -67,6 +67,7 @@ def good_data(today=None):
         "TREND_2_NAME": "GRX Chain", "TREND_2_CHANGE": "+62.1%",
         "TREND_3_NAME": "Magma Finance", "TREND_3_CHANGE": "+45.0%",
         "TREND_4_NAME": "The Sandbox", "TREND_4_CHANGE": "+77.5%",
+        "TREND_5_NAME": "Doppler Finance", "TREND_5_CHANGE": "-1.01%",
         "RADAR_1_LABEL": "BNY × Kraken",
         "RADAR_1_TEXT": "BNY is reportedly in discussions with Kraken parent Payward over a potential partnership.",
         "RADAR_2_LABEL": "Crypto Banking",
@@ -81,6 +82,8 @@ def good_data(today=None):
         "DONALD_TRUMP_URL": "https://coinedition.com/tag/donald-trump/",
         "CHANGPENG_ZHAO_URL": "https://coinedition.com/tag/changpeng-zhao/",
         "VITALIK_BUTERIN_URL": "https://coinedition.com/tag/vitalik-buterin/",
+        "RECAP_DATE": "October 14, 2026",
+        "RECAP_URL": "https://coinedition.com/24-hour-crypto-recap-heres-what-happened-in-the-market-74/",
     })
     return data
 

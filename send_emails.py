@@ -41,7 +41,7 @@ Safety locks - ALL of them must pass before a single email is sent
   3. No other sending run may be active, and the send log must be readable and writable.
   4. newsletter/newsletter_data.txt must pass every check, including READY_TO_SEND_ON = today,
      so sample content or yesterday's prices can't go out by mistake. There is no override here
-     (send_test.py --allow-sample-content is for the 4 test addresses only).
+     (send_test.py --allow-sample-content is for the test address only).
   5. The live Brevo template must pass every check and match template/brevo_template_1.html.
   6. Brevo's records must agree with the local send log.
   7. Today's allowance (see above) must be more than 0.
@@ -72,7 +72,8 @@ from datetime import timedelta
 from pathlib import Path
 
 from brevo_api import BrevoClient, BrevoError, SettingsError, daily_credits_left, load_settings
-from newsletter_params import build_params, check_newsletter_data, email_subject, params_table, read_newsletter_data
+from newsletter_params import (build_params, check_newsletter_data, email_subject, entries_report, params_table,
+                               read_newsletter_data)
 from recipients import find_column, read_table
 from send_state import (DONE, GIVE_UP_AFTER, LockedError, SendLock, SendLog, SendLogError, backup_log, now,
                         round_tag)
@@ -524,6 +525,9 @@ def cmd_send(paths, max_count=None):
         print("\n  Brevo params in every email (from newsletter/newsletter_data.txt):")
         for line in params_table(shown_params, data):
             print("    " + line)
+        print("\n  Numbered sections - every email shows exactly these entries, in this order:")
+        for line in entries_report(data):
+            print("    " + line)
         for warning in content_warnings:
             print(f"  [WARN] {warning}")
 
@@ -618,6 +622,9 @@ def cmd_dry_run(paths, max_count=None):
     print(f"  Subject    : {email_subject(data)}")
     if queue:
         print(f"  First, last: {queue[0][1]['email']}  ...  {queue[-1][1]['email']}")
+    print("  Sections   : every email shows exactly these entries, in this order:")
+    for line in entries_report(data):
+        print(f"               {line}")
     for warning in content_warnings:
         print(f"  [WARN] {warning}")
 

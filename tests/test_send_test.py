@@ -1,4 +1,4 @@
-"""send_test.py - the 4 TEST addresses only, and the TEST-ONLY --allow-sample-content option.
+"""send_test.py - the TEST address only, and the TEST-ONLY --allow-sample-content option.
 
 Each test works in a temporary copy of the project with a FAKE Brevo (tests/support.py). Real
 network access is switched off for the whole test run, so nothing can ever be sent.
@@ -21,9 +21,8 @@ import newsletter_params as np
 import send_test
 from send_state import now
 
-# (Email, Name) - like tests/test_recipients.csv, with addresses that can't exist
-RECIPIENTS = [("ana@test-recipients.test", "Ana"), ("ben@test-recipients.test", "Ben"),
-              ("cara@test-recipients.test", "Cara"), ("dev@test-recipients.test", "Dev")]
+# (Email, Name) - like tests/test_recipients.csv, with an address that can't exist
+RECIPIENTS = [("ana@test-recipients.test", "Ana")]
 
 
 def write_recipients(path, rows):
@@ -93,7 +92,7 @@ class NormalTestSendTests(TestSendCase):
                 self.assertIn("[FAIL] GLOBAL_CAP is still sample/placeholder content", out)
                 self.assertIn("python send_test.py --dry-run --allow-sample-content", out)   # the hint
 
-    def test_confirmed_content_goes_to_the_four_test_addresses_personalised(self):
+    def test_confirmed_content_goes_to_the_test_address_personalised(self):
         write_data_file(self.data_file, good_data(self.today))
         code, out = self.run_test_send()
         self.assertEqual(code, 0, out)
@@ -111,15 +110,14 @@ class NormalTestSendTests(TestSendCase):
         data, _ = np.read_newsletter_data(self.data_file)
         for payload, (_, name) in zip(self.brevo.payloads, RECIPIENTS):
             self.assertEqual(payload["params"], np.build_params(data, name, self.today))
-        self.assertEqual(len(self.brevo.payloads[0]["params"]), 54)
+        self.assertEqual(len(self.brevo.payloads[0]["params"]), 37)
 
     def test_an_edited_value_is_used_by_the_next_test_email(self):
         write_data_file(self.data_file, good_data(self.today))
         self.assertEqual(self.run_test_send()[0], 0)
         write_data_file(self.data_file, dict(good_data(self.today), BTC_PRICE="$90,000.00"))
         self.assertEqual(self.run_test_send()[0], 0)
-        self.assertEqual([p["params"]["btc_price"] for p in self.brevo.payloads],
-                         ["$84,681.83"] * 4 + ["$90,000.00"] * 4)
+        self.assertEqual([p["params"]["btc_price"] for p in self.brevo.payloads], ["$84,681.83", "$90,000.00"])
 
     def test_test_email_is_exactly_the_production_email(self):
         write_data_file(self.data_file, dict(good_data(self.today), STORY_1_TITLE="Ledger Confirms Tampered Hardware Wallets"))
@@ -132,21 +130,18 @@ class NormalTestSendTests(TestSendCase):
             self.assertIsNone(re.search(r"\btest\b", shown, re.IGNORECASE), shown)
 
     def test_addresses_are_sent_exactly_as_written_and_an_invalid_one_is_still_tried(self):
-        with open(self.recipients_file, "w", newline="", encoding="utf-8") as f:
-            csv.writer(f).writerows([["Email", "Name", "Surname"], ["Ana.Lima@Example-Test.com", "Ana", ""],
-                                     ["ben@example-test.com", "Ben", ""], ["carla.@example-test.com", "Carla", ""],
-                                     ["dev@example-test.com", "Dev", ""]])
         write_data_file(self.data_file, good_data(self.today))
-        code, out = self.run_test_send()
-        self.assertEqual(code, 0, out)
+        for row in [("Ana.Lima@Example-Test.com", "Ana"), ("carla.@example-test.com", "Carla")]:
+            write_recipients(self.recipients_file, [row])
+            code, out = self.run_test_send()
+            self.assertEqual(code, 0, out)
         self.assertEqual([p["to"][0]["email"] for p in self.brevo.payloads],
-                         ["Ana.Lima@Example-Test.com", "ben@example-test.com", "carla.@example-test.com",
-                          "dev@example-test.com"])
+                         ["Ana.Lima@Example-Test.com", "carla.@example-test.com"])
         self.assertIn("'carla.@example-test.com' does not look like a valid email address - it is still tried", out)
 
 
 class SampleContentOptionTests(TestSendCase):
-    def test_labelled_test_emails_go_to_the_four_test_addresses_only(self):
+    def test_labelled_test_emails_go_to_the_test_address_only(self):
         code, out = self.run_test_send("--allow-sample-content")
         self.assertEqual(code, 0, out)
         self.assertEqual(self.brevo.emails(), [e for e, _ in RECIPIENTS])
@@ -162,14 +157,14 @@ class SampleContentOptionTests(TestSendCase):
         self.assertIn("[SAMPLE] READY_TO_SEND_ON is empty", out)
         self.assertIn("[SAMPLE] TREND_1_NAME is still sample/placeholder content", out)
         self.assertFalse((self.dir / "logs" / "production_send_log.csv").exists())
-        self.assertEqual(len((self.dir / "logs" / "test_send_log.csv").read_text(encoding="utf-8").splitlines()), 5)
+        self.assertEqual(len((self.dir / "logs" / "test_send_log.csv").read_text(encoding="utf-8").splitlines()), 2)
 
     def test_only_the_labels_differ_from_the_data_file(self):
         self.run_test_send("--allow-sample-content")
         data, _ = np.read_newsletter_data(self.data_file)
         expected = np.build_params(data, "Ana", self.today)
         sent = self.brevo.payloads[0]["params"]
-        self.assertEqual(set(sent), set(expected))                      # the same 54 params
+        self.assertEqual(set(sent), set(expected))                      # the same 37 params
         self.assertEqual({k for k in expected if sent[k] != expected[k]}, {"date", "intro_description"})
         self.assertTrue(sent["intro_description"].endswith(expected["intro_description"]))
 
@@ -180,7 +175,7 @@ class SampleContentOptionTests(TestSendCase):
                 code, out = self.run_test_send("--allow-sample-content")
                 self.assertEqual((code, self.brevo.calls), (0, 0))
                 self.assertIn("Cancelled - nothing was sent", out)
-        self.assertIn("Type YES to send 4 test emails with UNVERIFIED sample content", self.questions[0])
+        self.assertIn("Type YES to send 1 test emails with UNVERIFIED sample content", self.questions[0])
 
     def test_dry_run_sends_nothing_and_shows_the_labels(self):
         code, out = self.run_test_send("--dry-run", "--allow-sample-content")
@@ -236,9 +231,12 @@ class SampleContentOptionTests(TestSendCase):
         self.assertIn("is not in your Brevo senders list", out)
 
     def test_recipient_rules_still_apply(self):
-        for rows, message in [(RECIPIENTS[:3], "it must have exactly 4"),
-                              (RECIPIENTS[:3] + [("test1@gmail.com", "X")], "is an example address"),
-                              (RECIPIENTS[:3] + [RECIPIENTS[0]], "is listed twice")]:
+        extra = [("ben@test-recipients.test", "Ben"), ("cara@test-recipients.test", "Cara")]
+        for rows, message in [([], "the file has 0 recipients - it must have exactly 1"),
+                              (RECIPIENTS + extra[:1], "the file has 2 recipients - it must have exactly 1"),
+                              (RECIPIENTS + extra, "the file has 3 recipients - it must have exactly 1"),
+                              ([("test1@gmail.com", "X")], "is an example address"),
+                              (RECIPIENTS + RECIPIENTS, "is listed twice")]:
             with self.subTest(message=message):
                 write_recipients(self.recipients_file, rows)
                 code, out = self.run_test_send("--allow-sample-content")
@@ -246,10 +244,10 @@ class SampleContentOptionTests(TestSendCase):
                 self.assertIn(message, out)
 
     def test_brevo_credits_are_still_checked(self):
-        self.brevo.extra_used_today = 298                               # 2 credits left, 4 needed
+        self.brevo.extra_used_today = 300                               # 0 credits left, 1 needed
         code, out = self.run_test_send("--allow-sample-content")
         self.assert_nothing_sent(code, out)
-        self.assertIn("not enough for 4", out)
+        self.assertIn("not enough for 1", out)
 
 
 if __name__ == "__main__":

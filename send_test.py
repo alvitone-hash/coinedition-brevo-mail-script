@@ -1,18 +1,18 @@
 """
-send_test.py - Send the Coin Edition newsletter to the 4 TEST addresses only.
+send_test.py - Send the Coin Edition newsletter to the TEST address only.
 
 This is the TEST script. It:
   1. reads your Brevo settings from .env (the API key is never printed)
   2. reads tests/test_recipients.csv - and ONLY that file - and stops unless
-     it contains exactly 4 valid, different email addresses
+     it contains exactly 1 email address (REQUIRED_RECIPIENTS)
   3. reads the newsletter content from newsletter/newsletter_data.txt and builds
      the Brevo params with newsletter_params.py - the SAME code production uses
   4. checks with Brevo (read-only) that the API key works, that the template is
      active, and that every {{ params.x }} placeholder, link and the unsubscribe
      link are right - the SAME checks production makes (template_check.py)
   5. saves the exact API payloads and a local preview of the email in logs/
-  6. only if every check passed: shows the 4 addresses and waits for you to type YES,
-     then sends the template to each test address separately
+  6. only if every check passed: shows the test address and waits for you to type YES,
+     then sends the template to it
 
 A test email is exactly what subscribers get: the same subject (the first Top Stories heading,
 STORY_1_TITLE), template and params as send_emails.py. Only --allow-sample-content labels it.
@@ -52,9 +52,9 @@ from pathlib import Path
 
 from brevo_api import BrevoClient, BrevoError, SettingsError, daily_credits_left, load_settings
 from newsletter_params import (
-    ARTICLE_URL_PARAMS, DATA_FILE, URL_PARAMS,
-    build_params, check_newsletter_data, check_values, email_subject, params_table, read_newsletter_data,
-    readiness_problems,
+    DATA_FILE, URL_PARAMS,
+    build_params, check_newsletter_data, check_values, email_subject, entries, entries_report, params_table,
+    read_newsletter_data, readiness_problems,
 )
 from recipients import clean_email, find_column, is_valid_email, read_table
 from send_state import LockedError, SendLock, now
@@ -71,7 +71,7 @@ PROJECT_DIR = Path(__file__).resolve().parent
 # there is no option to point it at another file, so the real subscriber
 # list in data/ or batches/ can never be used by mistake.
 TEST_RECIPIENTS_FILE = PROJECT_DIR / "tests" / "test_recipients.csv"
-REQUIRED_RECIPIENTS = 4
+REQUIRED_RECIPIENTS = 1      # the file must hold exactly this many addresses, or nothing is sent
 
 TEST_LOG_FILE = PROJECT_DIR / "logs" / "test_send_log.csv"        # every test send
 PAYLOAD_FILE = PROJECT_DIR / "logs" / "dry_run_payload.json"      # what would be sent (no API key)
@@ -120,11 +120,11 @@ def ask(question):
 
 
 # =============================================================================
-# STEP 2 - THE 4 TEST RECIPIENTS
+# STEP 2 - THE TEST RECIPIENT
 # =============================================================================
 
 def read_test_recipients():
-    """Read tests/test_recipients.csv. Stops unless it holds exactly 4 different addresses (none of them an
+    """Read tests/test_recipients.csv. Stops unless it holds exactly REQUIRED_RECIPIENTS addresses (none of them an
     example address). Every address is sent to exactly as written - never tidied or fixed; one that looks
     invalid is still tried, with a warning, and Brevo's answer is logged."""
     if not TEST_RECIPIENTS_FILE.exists():
@@ -283,7 +283,7 @@ def main(argv=None):
         sys.stdout.reconfigure(errors="replace")  # never crash on unusual characters in names
 
     parser = argparse.ArgumentParser(
-        description="Send the newsletter to the 4 TEST addresses in tests/test_recipients.csv only.")
+        description="Send the newsletter to the TEST address in tests/test_recipients.csv only.")
     parser.add_argument("--dry-run", action="store_true", help="do all the checks, but send nothing")
     parser.add_argument("--local-template", action="store_true",
                         help="with --dry-run: check template/brevo_template_1.html instead of the live template")
@@ -345,14 +345,18 @@ def main(argv=None):
     elif readiness_problems(data, today):
         print("  [INFO] To test anyway, with every email labelled as unverified sample content:\n"
               "             python send_test.py --dry-run --allow-sample-content")
+    print("  [INFO] Numbered sections - the email shows exactly these entries, in this order:")
+    for line in entries_report(data):
+        print(f"           {line}")
     for warning in warnings:
         print(f"  [WARN] {warning}")
     shown_params = build_params(data, "(each recipient's Name)", today)
     url_problems = check_url_params(shown_params)
     problems += url_problems
     urls = [param for param in URL_PARAMS if shown_params[param]]
-    articles = sum(1 for param in ARTICLE_URL_PARAMS if shown_params[param])
-    print(f"  [INFO] {len(urls)} web addresses in the params, including {articles} article URLs")
+    articles = sum(1 for story in entries(data, "STORY") if story["URL"])
+    print(f"  [INFO] {len(urls)} web addresses in the params, plus {articles} story article URL(s) in the "
+          "Top Stories rows (not shown as links)")
 
     print("\n4) Checking your Brevo account (read-only - nothing is sent)")
     client = BrevoClient(settings["api_key"])
